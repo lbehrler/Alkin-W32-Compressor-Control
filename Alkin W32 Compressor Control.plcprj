@@ -124,15 +124,19 @@ cnt := cnt + 1;
 ]]>
 					</sourceCode>
 				</program>
-				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1694914256" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
+				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1694916912" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
 					<vars>
 						<localVars>
 							<var name="Low_Oil_Fault" type="BOOL"/>
 							<var name="Motor_OL_Fault" type="BOOL"/>
 							<var name="Motor_Temp_Fault" type="BOOL"/>
 							<var name="E_Stop_Fault" type="BOOL"/>
-							<var name="ACD_Cycle_Start" type="TON"/>
-							<var name="ACD_Vent_Open" type="TON"/>
+							<var name="ACD_Cycle_Start" type="TON">
+								<descr>ACD Cycle</descr>
+							</var>
+							<var name="ACD_Vent_Open" type="TON">
+								<descr>ACD Vent Open</descr>
+							</var>
 							<var name="Oil_Pres_Delay" type="TON"/>
 							<var name="Flash" type="BOOL"/>
 							<var name="Motor_Standby" type="BOOL"/>
@@ -144,9 +148,11 @@ cnt := cnt + 1;
 						</localVars>
 						<localConsts>
 							<const name="ACD_Open" type="INT">
+								<descr>Duration of ACD Venting (ms)</descr>
 								<initValue>30000</initValue>
 							</const>
 							<const name="ACD_Cycle" type="UDINT">
+								<descr>Duration of ACD Vent Cycle (ms)</descr>
 								<initValue>900000</initValue>
 							</const>
 						</localConsts>
@@ -6075,7 +6081,7 @@ END_PROGRAM
 			</src>
 		</aux>
 		<workspace>
-			<root name="Alkin W32 Compressor Control" nextID="680">
+			<root name="Alkin W32 Compressor Control" nextID="714">
 				<Pou name="main" id="1"/>
 				<GlobalVars name="Global_vars" id="2"/>
 				<GlobalVars name="I_O_mappings_RelayOut" id="5"/>
