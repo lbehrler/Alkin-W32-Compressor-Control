@@ -1,0 +1,10 @@
+{
+  "additionalFiles": "",
+  "builtInToolsFolders": "",
+  "compiler.optimization_flags": "",
+  "customBuildProperties": "build.warn_data_percentage=75",
+  "fqbn": "arduino:mbed_opta:opta",
+  "hardwareFolders": "C:\\Users\\Brian E\\AppData\\Local\\T\\A\\packages",
+  "otherLibrariesFolders": "C:\\Users\\Brian E\\AppData\\Local\\T\\U\\libraries",
+  "sketchLocation": "C:\\Users\\Brian E\\Documents\\Arduino PLC\\Alkin W32 Compressor Control\\LLSketch"
+}

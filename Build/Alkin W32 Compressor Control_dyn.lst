@@ -1,0 +1,230 @@
+***********************************************************************
+*
+*	DYNAMIC LINK AND INDIRECT ALLOCATION LISTING FOR: Alkin W32 Compressor Control
+*
+***********************************************************************
+
+
+***************************************************
+	 FIRST CODE AREA
+***************************************************
+
+***************************************************
+	 DATABLOCK PATCHES
+***************************************************
+*
+* List of data blocks that will be checked run-time for consistency with
+* their definition available at compile-time
+*
+*
+*	REQUIREMENTS for DATA BLOCK %Q1
+*		Process image: 0
+*		Number of elements: 7
+*		Data size (bytes): 1
+0000	00 02 01 00 07 00 00 00 01 00 00 00 
+
+*
+*	REQUIREMENTS for DATA BLOCK %I1
+*		Process image: 0
+*		Number of elements: 1
+*		Data size (bytes): 1
+000C	00 01 01 00 01 00 00 00 01 00 00 00 
+
+*
+*	REQUIREMENTS for DATA BLOCK %Q0
+*		Process image: 0
+*		Number of elements: 4
+*		Data size (bytes): 1
+0018	00 02 00 00 04 00 00 00 01 00 00 00 
+
+*
+*	REQUIREMENTS for DATA BLOCK %M60000
+*		Process image: 0
+*		Number of elements: 1
+*		Data size (bytes): 4
+0024	00 00 60 EA 01 00 00 00 04 00 00 00 
+
+*
+*	REQUIREMENTS for DATA BLOCK %I0
+*		Process image: 0
+*		Number of elements: 8
+*		Data size (bytes): 2
+0030	00 01 00 00 08 00 00 00 02 00 00 00 
+
+*
+* List of all references to data allocated on data blocks
+* along with the whole information required by the run-time linker
+*
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #0 OF DATA BLOCK %Q1
+0000	00 00 01 00 00 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000660
+000C	60 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #0 OF DATA BLOCK %I1
+0010	00 00 01 00 00 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000698
+001C	98 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #4 OF DATA BLOCK %I0
+0020	00 00 00 00 04 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000684
+002C	84 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #4 OF DATA BLOCK %Q1
+0030	00 00 01 00 04 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000670
+003C	70 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #0 OF DATA BLOCK %I0
+0040	00 00 00 00 00 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x0000067C
+004C	7C 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #3 OF DATA BLOCK %Q1
+0050	00 00 01 00 03 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x0000066C
+005C	6C 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #6 OF DATA BLOCK %Q1
+0060	00 00 01 00 06 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000678
+006C	78 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #2 OF DATA BLOCK %Q0
+0070	00 00 00 00 02 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x000006A4
+007C	A4 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #1 OF DATA BLOCK %Q0
+0080	00 00 00 00 01 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x000006A0
+008C	A0 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #12 OF DATA BLOCK %I0
+0090	00 00 00 00 0C 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000694
+009C	94 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #10 OF DATA BLOCK %I0
+00A0	00 00 00 00 0A 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000690
+00AC	90 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #8 OF DATA BLOCK %I0
+00B0	00 00 00 00 08 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x0000068C
+00BC	8C 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #5 OF DATA BLOCK %Q1
+00C0	00 00 01 00 05 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000674
+00CC	74 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #2 OF DATA BLOCK %Q1
+00D0	00 00 01 00 02 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000668
+00DC	68 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 32-BIT VAR AT BYTE #0 OF DATA BLOCK %M60000
+00E0	00 00 60 EA 00 00 00 00 00 04 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000130
+00EC	30 01 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #1 OF DATA BLOCK %Q1
+00F0	00 00 01 00 01 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000664
+00FC	64 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #3 OF DATA BLOCK %Q0
+0100	00 00 00 00 03 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x000006A8
+010C	A8 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #0 OF DATA BLOCK %Q0
+0110	00 00 00 00 00 00 00 00 02 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x0000069C
+011C	9C 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #6 OF DATA BLOCK %I0
+0120	00 00 00 00 06 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000688
+012C	88 06 00 00 
+
+*
+*	1 REFERENCE(S) TO 8-BIT VAR AT BYTE #2 OF DATA BLOCK %I0
+0130	00 00 00 00 02 00 00 00 01 01 01 00 
+
+*		Instruction type: 0x00
+*		Code offset: 0x00000680
+013C	80 06 00 00 
+
+
+***************************************************
+	 FUNCTION PATCHES
+***************************************************
+
+NAME: sysCfgAnalogRes  - NUM: 1
+	 Patch - TYPE: 0x0 - CODE OFFSET: 0x000007FC
+
+NAME: sysCfgProgInput  - NUM: 1
+	 Patch - TYPE: 0x0 - CODE OFFSET: 0x00000800
+
+NAME: sysDBase_SetExtTable  - NUM: 1
+	 Patch - TYPE: 0x0 - CODE OFFSET: 0x00000730
