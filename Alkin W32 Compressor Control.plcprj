@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <plcProject caseSensitive="false" extendedIdNames="false" useCustomWorkspace="true" debugMode="false" extcheck="true" SFCControl="false" strictPointerCheck="true" verboseWarningMode="false" iecTypeConversionRules="false" PNContactsOnEachNetwork="false" LocalVarsFBAccess="false" strictEnumsCheck="true" copyWarningThreshold="200" version="2.11" useLD2="true" useXPLCFiles="false" useFBMethods="false" customSortOfProjectTree="false" autoDerefPointers="false">
 	<image>Alkin W32 Compressor Control.imgx</image>
-	<commSettings>Modbus:247,1000,M#COM:24,38400,N,8,1,H</commSettings>
+	<commSettings>Modbus:247,1000,M#COM:4,38400,N,8,1,H</commSettings>
 	<sources>
 		<main>
 			<resources>
@@ -124,7 +124,7 @@ cnt := cnt + 1;
 ]]>
 					</sourceCode>
 				</program>
-				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1694989261" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
+				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1695071380" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
 					<vars>
 						<localVars>
 							<var name="Low_Oil_Fault" type="BOOL"/>
@@ -146,6 +146,8 @@ cnt := cnt + 1;
 							<var name="Fault_Mode" type="BOOL"/>
 							<var name="Shutdown_Reset" type="TON"/>
 							<var name="BlinkOff_Rate" type="INT"/>
+							<var name="ACD_Startup" type="TON"/>
+							<var name="ACD_Starter" type="TOF"/>
 						</localVars>
 						<localConsts>
 							<const name="ACD_Open" type="INT">
@@ -154,14 +156,14 @@ cnt := cnt + 1;
 							</const>
 							<const name="ACD_Cycle" type="UDINT">
 								<descr>Duration of ACD Vent Cycle (ms)</descr>
-								<initValue>900000</initValue>
+								<initValue>300000</initValue>
 							</const>
 						</localConsts>
 					</vars>
 					<iecDeclaration active="FALSE"/>
 					<sourceCode type="LD2">
 						<LD2 version="1">
-							<network label="Fill_Cycle" id="1" nextID="117" comment="" disabled="false" disableCondition="">
+							<network label="Fill_Cycle" id="1" nextID="119" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<and id="18">
@@ -172,7 +174,7 @@ cnt := cnt + 1;
 											</or>
 											<contact name="Emergency_Stop" type="Normal" id="95"/>
 											<contact name="Stop" type="Normal" id="98"/>
-											<contact name="Pressure_Sensor" type="Closed" id="108"/>
+											<contact name="Pressure_Sensor" type="Normal" id="108"/>
 											<contact name="Low_Oil_Fault" type="Closed" id="77"/>
 											<contact name="Motor_OL_Fault" type="Closed" id="91"/>
 											<contact name="Motor_Temp_Fault" type="Closed" id="92"/>
@@ -183,7 +185,32 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Condensate" id="2" nextID="185" comment="" disabled="false" disableCondition="">
+							<network label="" id="2" nextID="6" comment="" disabled="false" disableCondition="">
+								<assignment fromTmpVar="">
+									<input>
+										<funcBlock name="TOF" id="4" instance="ACD_Starter">
+											<inputs>
+												<pin name="IN" neg="false" type="BOOL">
+													<contact name="Start" type="Normal" id="0"/>
+												</pin>
+												<pin name="PT" neg="false" type="UDINT">
+													<const name="10000" id="5"/>
+												</pin>
+											</inputs>
+											<outputs>
+												<pin name="Q" neg="false" type="BOOL">
+													<outputLine/>
+												</pin>
+												<pin name="ET" neg="false" type="UDINT"/>
+											</outputs>
+										</funcBlock>
+									</input>
+									<outputs>
+										<coil name="ACD" type="Normal" id="1"/>
+									</outputs>
+								</assignment>
+							</network>
+							<network label="Condensate" id="3" nextID="185" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="119" instance="ACD_Cycle_Start">
@@ -191,7 +218,7 @@ cnt := cnt + 1;
 												<pin name="IN" neg="false" type="BOOL">
 													<and id="177">
 														<contact name="Motor" type="Normal" id="178"/>
-														<contact name="ACD" type="Closed" id="179"/>
+														<contact name="ACD" type="Normal" id="179"/>
 													</and>
 												</pin>
 												<pin name="PT" neg="false" type="UDINT">
@@ -207,11 +234,11 @@ cnt := cnt + 1;
 										</funcBlock>
 									</input>
 									<outputs>
-										<coil name="ACD" type="Set" id="54"/>
+										<coil name="ACD" type="Reset" id="54"/>
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Condensate_Vent" id="3" nextID="178" comment="" disabled="false" disableCondition="">
+							<network label="Condensate_Vent" id="4" nextID="178" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="135" instance="ACD_Vent_Open">
@@ -219,7 +246,7 @@ cnt := cnt + 1;
 												<pin name="IN" neg="false" type="BOOL">
 													<and id="174">
 														<contact name="Motor" type="Normal" id="175"/>
-														<contact name="ACD" type="Normal" id="176"/>
+														<contact name="ACD" type="Closed" id="176"/>
 													</and>
 												</pin>
 												<pin name="PT" neg="false" type="UDINT">
@@ -235,11 +262,11 @@ cnt := cnt + 1;
 										</funcBlock>
 									</input>
 									<outputs>
-										<coil name="ACD" type="Reset" id="62"/>
+										<coil name="ACD" type="Set" id="62"/>
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Motor_Overload" id="4" nextID="90" comment="" disabled="false" disableCondition="">
+							<network label="Motor_Overload" id="5" nextID="90" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<operator name="MOVE" id="81">
@@ -266,7 +293,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="E_Stop" id="5" nextID="90" comment="" disabled="false" disableCondition="">
+							<network label="E_Stop" id="6" nextID="90" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<operator name="MOVE" id="81">
@@ -291,7 +318,7 @@ cnt := cnt + 1;
 									<outputs/>
 								</assignment>
 							</network>
-							<network label="Motor_Temp" id="6" nextID="90" comment="" disabled="false" disableCondition="">
+							<network label="Motor_Temp" id="7" nextID="90" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<operator name="MOVE" id="81">
@@ -318,7 +345,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Oil_Monitor" id="7" nextID="85" comment="" disabled="false" disableCondition="">
+							<network label="Oil_Monitor" id="8" nextID="85" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<operator name="MOVE" id="80">
@@ -363,7 +390,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Manual_Override" id="8" nextID="27" comment="" disabled="false" disableCondition="">
+							<network label="Manual_Override" id="9" nextID="27" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="14" instance="Shutdown_Reset">
@@ -397,17 +424,17 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="At_Pressure_Standby" id="9" nextID="4" comment="" disabled="false" disableCondition="">
+							<network label="At_Pressure_Standby" id="10" nextID="4" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
-										<contact name="Pressure_Sensor" type="Normal" id="2"/>
+										<contact name="Pressure_Sensor" type="Closed" id="2"/>
 									</input>
 									<outputs>
 										<coil name="Motor_Standby" type="Normal" id="1"/>
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Fault_Lighting" id="10" nextID="75" comment="" disabled="false" disableCondition="">
+							<network label="Fault_Lighting" id="11" nextID="75" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<or id="3">
@@ -424,7 +451,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="11" nextID="2" comment="" disabled="false" disableCondition="">
+							<network label="" id="12" nextID="2" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="Warn_Light" type="Normal" id="0"/>
@@ -434,7 +461,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="12" nextID="2" comment="" disabled="false" disableCondition="">
+							<network label="" id="13" nextID="2" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="Warn_Buzz" type="Normal" id="0"/>
@@ -444,7 +471,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="13" nextID="3" comment="" disabled="false" disableCondition="">
+							<network label="" id="14" nextID="4" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="Motor" type="Normal" id="0"/>
@@ -455,7 +482,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="14" nextID="2" comment="" disabled="false" disableCondition="">
+							<network label="" id="15" nextID="2" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="ACD" type="Normal" id="0"/>
@@ -465,7 +492,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="15" nextID="2" comment="" disabled="false" disableCondition="">
+							<network label="" id="16" nextID="2" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="Motor_Standby" type="Normal" id="0"/>
@@ -475,7 +502,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Fault_Code_On" id="16" nextID="17" comment="" disabled="false" disableCondition="">
+							<network label="Fault_Code_On" id="17" nextID="17" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="8" instance="Flasher">
@@ -504,7 +531,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Fault_Code_Off" id="17" nextID="45" comment="" disabled="false" disableCondition="">
+							<network label="Fault_Code_Off" id="18" nextID="45" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="27" instance="Flasher_Off">
@@ -518,10 +545,10 @@ cnt := cnt + 1;
 																	<contact name="Flash" type="Closed" id="9"/>
 																</and>
 															</pin>
-															<pin name="0" neg="false" type="">
+															<pin name="0" neg="false" type="UNDEF">
 																<var name="Blink_Rate" id="41"/>
 															</pin>
-															<pin name="1" neg="false" type="">
+															<pin name="1" neg="false" type="UNDEF">
 																<const name="10" id="44"/>
 															</pin>
 														</inputs>
@@ -529,7 +556,7 @@ cnt := cnt + 1;
 															<pin name="ENO" neg="false" type="BOOL">
 																<outputLine/>
 															</pin>
-															<pin name="2" neg="false" type="">
+															<pin name="2" neg="false" type="UNDEF">
 																<var name="BlinkOff_Rate" id="43"/>
 															</pin>
 														</outputs>
@@ -6102,7 +6129,7 @@ END_PROGRAM
 			</src>
 		</aux>
 		<workspace>
-			<root name="Alkin W32 Compressor Control" nextID="750">
+			<root name="Alkin W32 Compressor Control" nextID="857">
 				<Pou name="main" id="1"/>
 				<GlobalVars name="Global_vars" id="2"/>
 				<GlobalVars name="I_O_mappings_RelayOut" id="5"/>
