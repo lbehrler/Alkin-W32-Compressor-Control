@@ -124,7 +124,7 @@ cnt := cnt + 1;
 ]]>
 					</sourceCode>
 				</program>
-				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1694916912" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
+				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1694989261" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
 					<vars>
 						<localVars>
 							<var name="Low_Oil_Fault" type="BOOL"/>
@@ -145,6 +145,7 @@ cnt := cnt + 1;
 							<var name="Blink_Rate" type="UINT"/>
 							<var name="Fault_Mode" type="BOOL"/>
 							<var name="Shutdown_Reset" type="TON"/>
+							<var name="BlinkOff_Rate" type="INT"/>
 						</localVars>
 						<localConsts>
 							<const name="ACD_Open" type="INT">
@@ -482,7 +483,7 @@ cnt := cnt + 1;
 												<pin name="IN" neg="false" type="BOOL">
 													<and id="16">
 														<contact name="Fault_Mode" type="Normal" id="15"/>
-														<contact name="Flash" type="Closed" id="0"/>
+														<contact name="Flash" type="Normal" id="0"/>
 													</and>
 												</pin>
 												<pin name="PT" neg="false" type="UDINT">
@@ -499,23 +500,43 @@ cnt := cnt + 1;
 									</input>
 									<outputs>
 										<coil name="Flash" type="Normal" id="1"/>
-										<coil name="Fault_LED" type="Set" id="14"/>
+										<coil name="Fault_LED" type="Reset" id="14"/>
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Fault_Code_Off" id="17" nextID="39" comment="" disabled="false" disableCondition="">
+							<network label="Fault_Code_Off" id="17" nextID="45" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="27" instance="Flasher_Off">
 											<inputs>
 												<pin name="IN" neg="false" type="BOOL">
-													<and id="38">
-														<contact name="Fault_Mode" type="Normal" id="37"/>
-														<contact name="Flash" type="Normal" id="9"/>
-													</and>
+													<operator name="DIV" id="39">
+														<inputs>
+															<pin name="EN" neg="false" type="BOOL">
+																<and id="40">
+																	<contact name="Fault_Mode" type="Normal" id="37"/>
+																	<contact name="Flash" type="Closed" id="9"/>
+																</and>
+															</pin>
+															<pin name="0" neg="false" type="">
+																<var name="Blink_Rate" id="41"/>
+															</pin>
+															<pin name="1" neg="false" type="">
+																<const name="10" id="44"/>
+															</pin>
+														</inputs>
+														<outputs>
+															<pin name="ENO" neg="false" type="BOOL">
+																<outputLine/>
+															</pin>
+															<pin name="2" neg="false" type="">
+																<var name="BlinkOff_Rate" id="43"/>
+															</pin>
+														</outputs>
+													</operator>
 												</pin>
 												<pin name="PT" neg="false" type="UDINT">
-													<var name="Blink_Rate" id="35"/>
+													<var name="BlinkOff_Rate" id="35"/>
 												</pin>
 											</inputs>
 											<outputs>
@@ -528,7 +549,7 @@ cnt := cnt + 1;
 									</input>
 									<outputs>
 										<coil name="Flash" type="Normal" id="1"/>
-										<coil name="Fault_LED" type="Reset" id="36"/>
+										<coil name="Fault_LED" type="Set" id="36"/>
 									</outputs>
 								</assignment>
 							</network>
@@ -6081,7 +6102,7 @@ END_PROGRAM
 			</src>
 		</aux>
 		<workspace>
-			<root name="Alkin W32 Compressor Control" nextID="714">
+			<root name="Alkin W32 Compressor Control" nextID="750">
 				<Pou name="main" id="1"/>
 				<GlobalVars name="Global_vars" id="2"/>
 				<GlobalVars name="I_O_mappings_RelayOut" id="5"/>
