@@ -453,11 +453,14 @@ Shutdown_Reset : TON;
 BlinkOff_Rate : INT;
 ACD_Startup : TON;
 ACD_Starter : TOF;
+Start_Pause : TON;
+Pressure_Check : TOF;
+Clapper : BOOL;	{ DE:"Clap on clap off" }
 	END_VAR
 
         VAR CONSTANT
 ACD_Open : INT := 30000;	{ DE:"Duration of ACD Venting (ms)" }
-ACD_Cycle : UDINT := 300000;	{ DE:"Duration of ACD Vent Cycle (ms)" }
+ACD_Cycle : UDINT := 900000;	{ DE:"Duration of ACD Vent Cycle (ms)" }
 	END_VAR
 
 END_PROGRAM
@@ -469,893 +472,1009 @@ END_PROGRAM
 #4		Fill_Cycle:
 #5			LD		START {R:1$17}
 (*) UNDEF
-300001E0  F8DF 75AC		ldr r7, [pc, #+1452] ; 0x2403D74A
+300001E0  F8DF 7694		ldr r7, [pc, #+1684] ; 0x2403D74A
 300001E4  7838     		ldrb r0, [r7]
 
 #6			OR		MOTOR {R:1$110}
 (*) BOOL
-300001E6  F8DF 75C4		ldr r7, [pc, #+1476] ; 0x2403D759
+300001E6  F8DF 76AC		ldr r7, [pc, #+1708] ; 0x2403D759
 300001EA  783F     		ldrb r7, [r7]
 300001EC  4338     		orr r0, r0, r7
 
-#7			OR		MOTOR_STANDBY {R:1$114}
+#7			OR(		MOTOR_STANDBY {R:1$114}
 (*) BOOL
-300001EE  F8DF 74EC		ldr r7, [pc, #+1260] ; 0x24002BC7
-300001F2  783F     		ldrb r7, [r7]
-300001F4  4338     		orr r0, r0, r7
+300001EE  B082     		sub sp, sp, #8
+300001F0  F8CD 0000		str r0, [sp]
+300001F4  F8DF 75B8		ldr r7, [pc, #+1464] ; 0x24002BC7
+300001F8  7838     		ldrb r0, [r7]
 
-#8			AND		EMERGENCY_STOP {R:1$95}
+#8			AND		CLAPPER {R:1$120}
 (*) BOOL
-300001F6  F8DF 759C		ldr r7, [pc, #+1436] ; 0x2403D74C
-300001FA  783F     		ldrb r7, [r7]
-300001FC  4038     		and r0, r0, r7
+300001FA  F8DF 7658		ldr r7, [pc, #+1624] ; 0x24002CA0
+300001FE  783F     		ldrb r7, [r7]
+30000200  4038     		and r0, r0, r7
 
-#9			AND		STOP {R:1$98}
+#9			)
+#10			AND		EMERGENCY_STOP {R:1$95}
 (*) BOOL
-300001FE  F8DF 758C		ldr r7, [pc, #+1420] ; 0x2403D748
-30000202  783F     		ldrb r7, [r7]
-30000204  4038     		and r0, r0, r7
+30000202  4607     		mov r7, r0
+30000204  F8DD 0000		ldr r0, [sp]
+30000208  B002     		add sp, sp, #8
+3000020A  4338     		orr r0, r0, r7
 
-#10			AND		PRESSURE_SENSOR {R:1$108}
 (*) BOOL
-30000206  F8DF 7590		ldr r7, [pc, #+1424] ; 0x2403D74E
-3000020A  783F     		ldrb r7, [r7]
-3000020C  4038     		and r0, r0, r7
+3000020C  F8DF 766C		ldr r7, [pc, #+1644] ; 0x2403D74C
+30000210  783F     		ldrb r7, [r7]
+30000212  4038     		and r0, r0, r7
 
-#11			ANDN		LOW_OIL_FAULT {R:1$77}
+#11			ANDN		E_STOP_FAULT {R:1$119}
 (*) BOOL
-3000020E  F8DF 74C8		ldr r7, [pc, #+1224] ; 0x24002BC6
-30000212  783F     		ldrb r7, [r7]
-30000214  2F00     		cmp r7, #0
-30000216  BF08 2701		eqmov r7, #1
-3000021A  BF18 2700		nemov r7, #0
-3000021E  4038     		and r0, r0, r7
+30000214  F8DF 75CC		ldr r7, [pc, #+1484] ; 0x24002BF9
+30000218  783F     		ldrb r7, [r7]
+3000021A  2F00     		cmp r7, #0
+3000021C  BF08 2701		eqmov r7, #1
+30000220  BF18 2700		nemov r7, #0
+30000224  4038     		and r0, r0, r7
 
-#12			ANDN		MOTOR_OL_FAULT {R:1$91}
+#12			AND		STOP {R:1$98}
 (*) BOOL
-30000220  F8DF 74BC		ldr r7, [pc, #+1212] ; 0x24002BCC
-30000224  783F     		ldrb r7, [r7]
-30000226  2F00     		cmp r7, #0
-30000228  BF08 2701		eqmov r7, #1
-3000022C  BF18 2700		nemov r7, #0
-30000230  4038     		and r0, r0, r7
+30000226  F8DF 764C		ldr r7, [pc, #+1612] ; 0x2403D748
+3000022A  783F     		ldrb r7, [r7]
+3000022C  4038     		and r0, r0, r7
 
-#13			ANDN		MOTOR_TEMP_FAULT {R:1$92}
+#13			AND		PRESSURE_SENSOR {R:1$108}
 (*) BOOL
-30000232  F8DF 74B0		ldr r7, [pc, #+1200] ; 0x24002BCD
-30000236  783F     		ldrb r7, [r7]
-30000238  2F00     		cmp r7, #0
-3000023A  BF08 2701		eqmov r7, #1
-3000023E  BF18 2700		nemov r7, #0
-30000242  4038     		and r0, r0, r7
+3000022E  F8DF 7650		ldr r7, [pc, #+1616] ; 0x2403D74E
+30000232  783F     		ldrb r7, [r7]
+30000234  4038     		and r0, r0, r7
 
-#14			ST		MOTOR {R:1$1}
+#14			ANDN		LOW_OIL_FAULT {R:1$77}
 (*) BOOL
-30000244  F8DF 7564		ldr r7, [pc, #+1380] ; 0x2403D759
-30000248  7038     		strb r0, [r7]
+30000236  F8DF 7574		ldr r7, [pc, #+1396] ; 0x24002BC6
+3000023A  783F     		ldrb r7, [r7]
+3000023C  2F00     		cmp r7, #0
+3000023E  BF08 2701		eqmov r7, #1
+30000242  BF18 2700		nemov r7, #0
+30000246  4038     		and r0, r0, r7
 
-#15		 
-#16			(* Network 2 *)
-#17			LD		START {R:2$0}
+#15			ANDN		MOTOR_OL_FAULT {R:1$91}
+(*) BOOL
+30000248  F8DF 7568		ldr r7, [pc, #+1384] ; 0x24002BCC
+3000024C  783F     		ldrb r7, [r7]
+3000024E  2F00     		cmp r7, #0
+30000250  BF08 2701		eqmov r7, #1
+30000254  BF18 2700		nemov r7, #0
+30000258  4038     		and r0, r0, r7
+
+#16			AND		MOTOR_TEMP_FAULT {R:1$92}
+(*) BOOL
+3000025A  F8DF 755C		ldr r7, [pc, #+1372] ; 0x24002BCD
+3000025E  783F     		ldrb r7, [r7]
+30000260  4038     		and r0, r0, r7
+
+#17			ST		MOTOR {R:1$1}
+(*) BOOL
+30000262  F8DF 7630		ldr r7, [pc, #+1584] ; 0x2403D759
+30000266  7038     		strb r0, [r7]
+
+#18		 
+#19			(* Network 2 *)
+#20			LD		START {R:2$0}
 (*) UNDEF
-3000024A  F8DF 7544		ldr r7, [pc, #+1348] ; 0x2403D74A
-3000024E  7838     		ldrb r0, [r7]
+30000268  F8DF 760C		ldr r7, [pc, #+1548] ; 0x2403D74A
+3000026C  7838     		ldrb r0, [r7]
 
-#18			ST		ACD_STARTER.IN {R:2$4}
+#21			ST		ACD_STARTER.IN {R:2$4}
 (*) BOOL
-30000250  F8DF 7510		ldr r7, [pc, #+1296] ; 0x24002C68
-30000254  7038     		strb r0, [r7]
+3000026E  F8DF 75C8		ldr r7, [pc, #+1480] ; 0x24002C68
+30000272  7038     		strb r0, [r7]
 
-#19			MOVE		10000,ACD_STARTER.PT {R:2$4}
+#22			MOVE		3000,ACD_STARTER.PT {R:2$4}
 (*) BOOL
-30000256  F8DF 7474		ldr r7, [pc, #+1140] ; 0x2710
-3000025A  4638     		mov r0, r7
-3000025C  F8DF 7508		ldr r7, [pc, #+1288] ; 0x24002C6C
-30000260  6038     		str r0, [r7]
+30000274  F8DF 7520		ldr r7, [pc, #+1312] ; 0xBB8
+30000278  4638     		mov r0, r7
+3000027A  F8DF 75C0		ldr r7, [pc, #+1472] ; 0x24002C6C
+3000027E  6038     		str r0, [r7]
 
-#20			CAL		ACD_STARTER {R:2$4}
+#23			CAL		ACD_STARTER {R:2$4}
 (*) UDINT
-30000262  E92D 0021		stmdb sp!, { r0, r5 }
-30000266  F8DF 54F8		ldr r5, [pc, #+1272] ; 0x24002C64
-3000026A  F8DF 4550		ldr r4, [pc, #+1360] ; 0x300000C8
-3000026E  F044 0401		orr r4, r4, #1
-30000272  47A0     		blx r4
-30000274  E8BD 0021		ldmia sp!, { r0, r5 }
+30000280  E92D 0021		stmdb sp!, { r0, r5 }
+30000284  F8DF 55AC		ldr r5, [pc, #+1452] ; 0x24002C64
+30000288  F8DF 4618		ldr r4, [pc, #+1560] ; 0x300000C8
+3000028C  F044 0401		orr r4, r4, #1
+30000290  47A0     		blx r4
+30000292  E8BD 0021		ldmia sp!, { r0, r5 }
 
-#21			LD		ACD_STARTER.Q {R:2$4}
+#24			LD		ACD_STARTER.Q {R:2$4}
 (*) UNDEF
-30000278  F8DF 74F0		ldr r7, [pc, #+1264] ; 0x24002C70
-3000027C  7838     		ldrb r0, [r7]
+30000296  F8DF 75A8		ldr r7, [pc, #+1448] ; 0x24002C70
+3000029A  7838     		ldrb r0, [r7]
 
-#22			ST		ACD {R:2$1}
+#25			S		ACD {R:2$1}
 (*) BOOL
-3000027E  F8DF 7530		ldr r7, [pc, #+1328] ; 0x2403D75A
-30000282  7038     		strb r0, [r7]
+3000029C  2800     		cmp r0, #0
+3000029E  D009     		beq #0x000012
+300002A0  B082     		sub sp, sp, #8
+300002A2  F8CD 0000		str r0, [sp]
+300002A6  2001     		mov r0, #1
+300002A8  F8DF 75EC		ldr r7, [pc, #+1516] ; 0x2403D75A
+300002AC  7038     		strb r0, [r7]
+300002AE  F8DD 0000		ldr r0, [sp]
+300002B2  B002     		add sp, sp, #8
 
-#23		 
-#24			(* Network 3 *)
-#25		Condensate:
-#26			LD		MOTOR {R:3$178}
+#26			S		CLAPPER {R:2$6}
+(*) BOOL
+300002B4  2800     		cmp r0, #0
+300002B6  D009     		beq #0x000012
+300002B8  B082     		sub sp, sp, #8
+300002BA  F8CD 0000		str r0, [sp]
+300002BE  2001     		mov r0, #1
+300002C0  F8DF 7590		ldr r7, [pc, #+1424] ; 0x24002CA0
+300002C4  7038     		strb r0, [r7]
+300002C6  F8DD 0000		ldr r0, [sp]
+300002CA  B002     		add sp, sp, #8
+
+#27		 
+#28			(* Network 3 *)
+#29			LDN		STOP {R:3$0}
 (*) UNDEF
-30000284  F8DF 7524		ldr r7, [pc, #+1316] ; 0x2403D759
-30000288  7838     		ldrb r0, [r7]
+300002CC  F8DF 75A4		ldr r7, [pc, #+1444] ; 0x2403D748
+300002D0  7838     		ldrb r0, [r7]
+300002D2  2800     		cmp r0, #0
+300002D4  BF08 2001		eqmov r0, #1
+300002D8  BF18 2000		nemov r0, #0
 
-#27			AND		ACD {R:3$179}
+#30			R		CLAPPER {R:3$1}
 (*) BOOL
-3000028A  F8DF 7524		ldr r7, [pc, #+1316] ; 0x2403D75A
-3000028E  783F     		ldrb r7, [r7]
-30000290  4038     		and r0, r0, r7
+300002DC  2800     		cmp r0, #0
+300002DE  D009     		beq #0x000012
+300002E0  B082     		sub sp, sp, #8
+300002E2  F8CD 0000		str r0, [sp]
+300002E6  2000     		mov r0, #0
+300002E8  F8DF 7568		ldr r7, [pc, #+1384] ; 0x24002CA0
+300002EC  7038     		strb r0, [r7]
+300002EE  F8DD 0000		ldr r0, [sp]
+300002F2  B002     		add sp, sp, #8
 
-#28			ST		ACD_CYCLE_START.IN {R:3$119}
+#31		 
+#32			(* Network 4 *)
+#33		Condensate:
+#34			LD		MOTOR {R:4$178}
+(*) UNDEF
+300002F4  F8DF 759C		ldr r7, [pc, #+1436] ; 0x2403D759
+300002F8  7838     		ldrb r0, [r7]
+
+#35			AND		ACD {R:4$179}
 (*) BOOL
-30000292  F8DF 745C		ldr r7, [pc, #+1116] ; 0x24002BD4
-30000296  7038     		strb r0, [r7]
+300002FA  F8DF 759C		ldr r7, [pc, #+1436] ; 0x2403D75A
+300002FE  783F     		ldrb r7, [r7]
+30000300  4038     		and r0, r0, r7
 
-#29			MOVE		ACD_CYCLE,ACD_CYCLE_START.PT {R:3$119}
+#36			ST		ACD_CYCLE_START.IN {R:4$119}
 (*) BOOL
-30000298  F8DF 7438		ldr r7, [pc, #+1080] ; 0x493E0
-3000029C  4638     		mov r0, r7
-3000029E  F8DF 7454		ldr r7, [pc, #+1108] ; 0x24002BD8
-300002A2  6038     		str r0, [r7]
+30000302  F8DF 74C0		ldr r7, [pc, #+1216] ; 0x24002BD4
+30000306  7038     		strb r0, [r7]
 
-#30			CAL		ACD_CYCLE_START {R:3$119}
+#37			MOVE		ACD_CYCLE,ACD_CYCLE_START.PT {R:4$119}
+(*) BOOL
+30000308  F8DF 749C		ldr r7, [pc, #+1180] ; 0xDBBA0
+3000030C  4638     		mov r0, r7
+3000030E  F8DF 74B8		ldr r7, [pc, #+1208] ; 0x24002BD8
+30000312  6038     		str r0, [r7]
+
+#38			CAL		ACD_CYCLE_START {R:4$119}
 (*) UDINT
-300002A4  E92D 0021		stmdb sp!, { r0, r5 }
-300002A8  F8DF 5440		ldr r5, [pc, #+1088] ; 0x24002BD0
-300002AC  F8DF 4510		ldr r4, [pc, #+1296] ; 0x3000014C
-300002B0  F044 0401		orr r4, r4, #1
-300002B4  47A0     		blx r4
-300002B6  E8BD 0021		ldmia sp!, { r0, r5 }
+30000314  E92D 0021		stmdb sp!, { r0, r5 }
+30000318  F8DF 54A4		ldr r5, [pc, #+1188] ; 0x24002BD0
+3000031C  F8DF 4588		ldr r4, [pc, #+1416] ; 0x3000014C
+30000320  F044 0401		orr r4, r4, #1
+30000324  47A0     		blx r4
+30000326  E8BD 0021		ldmia sp!, { r0, r5 }
 
-#31			LD		ACD_CYCLE_START.Q {R:3$119}
+#39			LD		ACD_CYCLE_START.Q {R:4$119}
 (*) UNDEF
-300002BA  F8DF 743C		ldr r7, [pc, #+1084] ; 0x24002BDC
-300002BE  7838     		ldrb r0, [r7]
+3000032A  F8DF 74A0		ldr r7, [pc, #+1184] ; 0x24002BDC
+3000032E  7838     		ldrb r0, [r7]
 
-#32			R		ACD {R:3$54}
+#40			R		ACD {R:4$54}
 (*) BOOL
-300002C0  2800     		cmp r0, #0
-300002C2  D009     		beq #0x000012
-300002C4  B082     		sub sp, sp, #8
-300002C6  F8CD 0000		str r0, [sp]
-300002CA  2000     		mov r0, #0
-300002CC  F8DF 74E0		ldr r7, [pc, #+1248] ; 0x2403D75A
-300002D0  7038     		strb r0, [r7]
-300002D2  F8DD 0000		ldr r0, [sp]
-300002D6  B002     		add sp, sp, #8
+30000330  2800     		cmp r0, #0
+30000332  D009     		beq #0x000012
+30000334  B082     		sub sp, sp, #8
+30000336  F8CD 0000		str r0, [sp]
+3000033A  2000     		mov r0, #0
+3000033C  F8DF 7558		ldr r7, [pc, #+1368] ; 0x2403D75A
+30000340  7038     		strb r0, [r7]
+30000342  F8DD 0000		ldr r0, [sp]
+30000346  B002     		add sp, sp, #8
 
-#33		 
-#34			(* Network 4 *)
-#35		Condensate_Vent:
-#36			LD		MOTOR {R:4$175}
+#41		 
+#42			(* Network 5 *)
+#43		Condensate_Vent:
+#44			LD		MOTOR {R:5$175}
 (*) UNDEF
-300002D8  F8DF 74D0		ldr r7, [pc, #+1232] ; 0x2403D759
-300002DC  7838     		ldrb r0, [r7]
+30000348  F8DF 7548		ldr r7, [pc, #+1352] ; 0x2403D759
+3000034C  7838     		ldrb r0, [r7]
 
-#37			ANDN		ACD {R:4$176}
+#45			ST		START_PAUSE.IN {R:5$179}
 (*) BOOL
-300002DE  F8DF 74D0		ldr r7, [pc, #+1232] ; 0x2403D75A
-300002E2  783F     		ldrb r7, [r7]
-300002E4  2F00     		cmp r7, #0
-300002E6  BF08 2701		eqmov r7, #1
-300002EA  BF18 2700		nemov r7, #0
-300002EE  4038     		and r0, r0, r7
+3000034E  F8DF 74F8		ldr r7, [pc, #+1272] ; 0x24002C7C
+30000352  7038     		strb r0, [r7]
 
-#38			ST		ACD_VENT_OPEN.IN {R:4$135}
+#46			MOVE		5000,START_PAUSE.PT {R:5$179}
 (*) BOOL
-300002F0  F8DF 740C		ldr r7, [pc, #+1036] ; 0x24002BE8
-300002F4  7038     		strb r0, [r7]
+30000354  F8DF 7444		ldr r7, [pc, #+1092] ; 0x1388
+30000358  4638     		mov r0, r7
+3000035A  F8DF 74F0		ldr r7, [pc, #+1264] ; 0x24002C80
+3000035E  6038     		str r0, [r7]
 
-#39			MOVE		ACD_OPEN,ACD_VENT_OPEN.PT {R:4$135}
-(*) BOOL
-300002F6  F8DF 73D8		ldr r7, [pc, #+984] ; 0x7530
-300002FA  4638     		mov r0, r7
-300002FC  F8DF 7404		ldr r7, [pc, #+1028] ; 0x24002BEC
-30000300  6038     		str r0, [r7]
-
-#40			CAL		ACD_VENT_OPEN {R:4$135}
+#47			CAL		START_PAUSE {R:5$179}
 (*) UDINT
-30000302  E92D 0021		stmdb sp!, { r0, r5 }
-30000306  F8DF 53F4		ldr r5, [pc, #+1012] ; 0x24002BE4
-3000030A  F8DF 44B4		ldr r4, [pc, #+1204] ; 0x3000014C
-3000030E  F044 0401		orr r4, r4, #1
-30000312  47A0     		blx r4
-30000314  E8BD 0021		ldmia sp!, { r0, r5 }
+30000360  E92D 0021		stmdb sp!, { r0, r5 }
+30000364  F8DF 54DC		ldr r5, [pc, #+1244] ; 0x24002C78
+30000368  F8DF 453C		ldr r4, [pc, #+1340] ; 0x3000014C
+3000036C  F044 0401		orr r4, r4, #1
+30000370  47A0     		blx r4
+30000372  E8BD 0021		ldmia sp!, { r0, r5 }
 
-#41			LD		ACD_VENT_OPEN.Q {R:4$135}
+#48			LD		START_PAUSE.Q {R:5$179}
 (*) UNDEF
-30000318  F8DF 73EC		ldr r7, [pc, #+1004] ; 0x24002BF0
-3000031C  7838     		ldrb r0, [r7]
+30000376  F8DF 74D8		ldr r7, [pc, #+1240] ; 0x24002C84
+3000037A  7838     		ldrb r0, [r7]
 
-#42			S		ACD {R:4$62}
+#49			ANDN		ACD {R:5$176}
 (*) BOOL
-3000031E  2800     		cmp r0, #0
-30000320  D009     		beq #0x000012
-30000322  B082     		sub sp, sp, #8
-30000324  F8CD 0000		str r0, [sp]
-30000328  2001     		mov r0, #1
-3000032A  F8DF 7484		ldr r7, [pc, #+1156] ; 0x2403D75A
-3000032E  7038     		strb r0, [r7]
-30000330  F8DD 0000		ldr r0, [sp]
-30000334  B002     		add sp, sp, #8
+3000037C  F8DF 7518		ldr r7, [pc, #+1304] ; 0x2403D75A
+30000380  783F     		ldrb r7, [r7]
+30000382  2F00     		cmp r7, #0
+30000384  BF08 2701		eqmov r7, #1
+30000388  BF18 2700		nemov r7, #0
+3000038C  4038     		and r0, r0, r7
 
-#43		 
-#44			(* Network 5 *)
-#45		Motor_Overload:
-#46			LD		MOTOR_OL {R:5$19}
+#50			ST		ACD_VENT_OPEN.IN {R:5$135}
+(*) BOOL
+3000038E  F8DF 7444		ldr r7, [pc, #+1092] ; 0x24002BE8
+30000392  7038     		strb r0, [r7]
+
+#51			MOVE		ACD_OPEN,ACD_VENT_OPEN.PT {R:5$135}
+(*) BOOL
+30000394  F8DF 740C		ldr r7, [pc, #+1036] ; 0x7530
+30000398  4638     		mov r0, r7
+3000039A  F8DF 743C		ldr r7, [pc, #+1084] ; 0x24002BEC
+3000039E  6038     		str r0, [r7]
+
+#52			CAL		ACD_VENT_OPEN {R:5$135}
+(*) UDINT
+300003A0  E92D 0021		stmdb sp!, { r0, r5 }
+300003A4  F8DF 5428		ldr r5, [pc, #+1064] ; 0x24002BE4
+300003A8  F8DF 44FC		ldr r4, [pc, #+1276] ; 0x3000014C
+300003AC  F044 0401		orr r4, r4, #1
+300003B0  47A0     		blx r4
+300003B2  E8BD 0021		ldmia sp!, { r0, r5 }
+
+#53			LD		ACD_VENT_OPEN.Q {R:5$135}
 (*) UNDEF
-30000336  F8DF 746C		ldr r7, [pc, #+1132] ; 0x2403D754
-3000033A  7838     		ldrb r0, [r7]
+300003B6  F8DF 7424		ldr r7, [pc, #+1060] ; 0x24002BF0
+300003BA  7838     		ldrb r0, [r7]
 
-#47			JMPCN	$$LAB$1
+#54			S		ACD {R:5$62}
+(*) BOOL
+300003BC  2800     		cmp r0, #0
+300003BE  D009     		beq #0x000012
+300003C0  B082     		sub sp, sp, #8
+300003C2  F8CD 0000		str r0, [sp]
+300003C6  2001     		mov r0, #1
+300003C8  F8DF 74CC		ldr r7, [pc, #+1228] ; 0x2403D75A
+300003CC  7038     		strb r0, [r7]
+300003CE  F8DD 0000		ldr r0, [sp]
+300003D2  B002     		add sp, sp, #8
+
+#55		 
+#56			(* Network 6 *)
+#57		Motor_Overload:
+#58			LD		MOTOR_OL {R:6$19}
+(*) UNDEF
+300003D4  F8DF 74B4		ldr r7, [pc, #+1204] ; 0x2403D754
+300003D8  7838     		ldrb r0, [r7]
+
+#59			JMPCN	$$LAB$1
 (-) BOOL
-3000033C  2800     		cmp r0, #0
-3000033E  D005     		beq #10 ; 0x3000034C
+300003DA  2800     		cmp r0, #0
+300003DC  D005     		beq #10 ; 0x300003EA
 
 
-#48			LD		300 {R:5$89}
+#60			LD		300 {R:6$89}
 (*) UNDEF
-30000342  F44F 7096		mov r0, #300 ; 300
+300003E0  F44F 7096		mov r0, #300 ; 300
 
-#49			ST		BLINK_RATE {R:5$88}
+#61			ST		BLINK_RATE {R:6$88}
 (*) UINT
-30000346  F8DF 73A0		ldr r7, [pc, #+928] ; 0x24002BCE
-3000034A  8038     		strh r0, [r7]
+300003E4  F8DF 73D4		ldr r7, [pc, #+980] ; 0x24002BCE
+300003E8  8038     		strh r0, [r7]
 
-#50		$$LAB$1:
-#51			LD		MOTOR_OL
+#62		$$LAB$1:
+#63			LD		MOTOR_OL
 (*) UNDEF
-3000034C  F8DF 7454		ldr r7, [pc, #+1108] ; 0x2403D754
-30000350  7838     		ldrb r0, [r7]
+300003EA  F8DF 74A0		ldr r7, [pc, #+1184] ; 0x2403D754
+300003EE  7838     		ldrb r0, [r7]
 
-#52			S		MOTOR_OL_FAULT {R:5$80}
+#64			S		MOTOR_OL_FAULT {R:6$80}
 (*) BOOL
-30000352  2800     		cmp r0, #0
-30000354  D009     		beq #0x000012
-30000356  B082     		sub sp, sp, #8
-30000358  F8CD 0000		str r0, [sp]
-3000035C  2001     		mov r0, #1
-3000035E  F8DF 7380		ldr r7, [pc, #+896] ; 0x24002BCC
-30000362  7038     		strb r0, [r7]
-30000364  F8DD 0000		ldr r0, [sp]
-30000368  B002     		add sp, sp, #8
+300003F0  2800     		cmp r0, #0
+300003F2  D009     		beq #0x000012
+300003F4  B082     		sub sp, sp, #8
+300003F6  F8CD 0000		str r0, [sp]
+300003FA  2001     		mov r0, #1
+300003FC  F8DF 73B4		ldr r7, [pc, #+948] ; 0x24002BCC
+30000400  7038     		strb r0, [r7]
+30000402  F8DD 0000		ldr r0, [sp]
+30000406  B002     		add sp, sp, #8
 
-#53		 
-#54			(* Network 6 *)
-#55		E_Stop:
-#56			LDN		EMERGENCY_STOP {R:6$19}
+#65		 
+#66			(* Network 7 *)
+#67		E_Stop:
+#68			LDN		EMERGENCY_STOP {R:7$19}
 (*) UNDEF
-3000036A  F8DF 7428		ldr r7, [pc, #+1064] ; 0x2403D74C
-3000036E  7838     		ldrb r0, [r7]
-30000370  2800     		cmp r0, #0
-30000372  BF08 2001		eqmov r0, #1
-30000376  BF18 2000		nemov r0, #0
-
-#57			ST		$$VAR$1
-(*) BOOL
-3000037A  F8DF 7390		ldr r7, [pc, #+912] ; 0x24002BF8
-3000037E  7038     		strb r0, [r7]
-
-#58			JMPCN	$$LAB$2
-(-) BOOL
-30000380  2800     		cmp r0, #0
-30000382  D006     		beq #12 ; 0x30000392
-
-
-#59			LD		10000 {R:6$89}
-(*) UNDEF
-30000386  F8DF 7344		ldr r7, [pc, #+836] ; 0x2710
-3000038A  4638     		mov r0, r7
-
-#60			ST		BLINK_RATE {R:6$88}
-(*) UINT
-3000038C  F8DF 7358		ldr r7, [pc, #+856] ; 0x24002BCE
-30000390  8038     		strh r0, [r7]
-
-#61		$$LAB$2:
-#62			LD		$$VAR$1
-(*) UNDEF
-30000392  F8DF 7378		ldr r7, [pc, #+888] ; 0x24002BF8
-30000396  7838     		ldrb r0, [r7]
-
-#63		 
-#64			(* Network 7 *)
-#65		Motor_Temp:
-#66			LD		TEMP_SENSOR {R:7$19}
-(*) UNDEF
-30000398  F8DF 7404		ldr r7, [pc, #+1028] ; 0x2403D752
-3000039C  7838     		ldrb r0, [r7]
-
-#67			JMPCN	$$LAB$3
-(-) BOOL
-3000039E  2800     		cmp r0, #0
-300003A0  D005     		beq #10 ; 0x300003AE
-
-
-#68			LD		2000 {R:7$89}
-(*) UNDEF
-300003A4  F44F 60FA		mov r0, #2000 ; 2000
-
-#69			ST		BLINK_RATE {R:7$88}
-(*) UINT
-300003A8  F8DF 733C		ldr r7, [pc, #+828] ; 0x24002BCE
-300003AC  8038     		strh r0, [r7]
-
-#70		$$LAB$3:
-#71			LD		TEMP_SENSOR
-(*) UNDEF
-300003AE  F8DF 73F0		ldr r7, [pc, #+1008] ; 0x2403D752
-300003B2  7838     		ldrb r0, [r7]
-
-#72			S		MOTOR_TEMP_FAULT {R:7$80}
-(*) BOOL
-300003B4  2800     		cmp r0, #0
-300003B6  D009     		beq #0x000012
-300003B8  B082     		sub sp, sp, #8
-300003BA  F8CD 0000		str r0, [sp]
-300003BE  2001     		mov r0, #1
-300003C0  F8DF 7320		ldr r7, [pc, #+800] ; 0x24002BCD
-300003C4  7038     		strb r0, [r7]
-300003C6  F8DD 0000		ldr r0, [sp]
-300003CA  B002     		add sp, sp, #8
-
-#73		 
-#74			(* Network 8 *)
-#75		Oil_Monitor:
-#76			LD		MOTOR {R:8$21}
-(*) UNDEF
-300003CC  F8DF 73DC		ldr r7, [pc, #+988] ; 0x2403D759
-300003D0  7838     		ldrb r0, [r7]
-
-#77			ST		OIL_PRES_DELAY.IN {R:8$59}
-(*) BOOL
-300003D2  F8DF 734C		ldr r7, [pc, #+844] ; 0x24002C00
-300003D6  7038     		strb r0, [r7]
-
-#78			MOVE		5000,OIL_PRES_DELAY.PT {R:8$59}
-(*) BOOL
-300003D8  F8DF 72EC		ldr r7, [pc, #+748] ; 0x1388
-300003DC  4638     		mov r0, r7
-300003DE  F8DF 7344		ldr r7, [pc, #+836] ; 0x24002C04
-300003E2  6038     		str r0, [r7]
-
-#79			CAL		OIL_PRES_DELAY {R:8$59}
-(*) UDINT
-300003E4  E92D 0021		stmdb sp!, { r0, r5 }
-300003E8  F8DF 5330		ldr r5, [pc, #+816] ; 0x24002BFC
-300003EC  F8DF 43D0		ldr r4, [pc, #+976] ; 0x3000014C
-300003F0  F044 0401		orr r4, r4, #1
-300003F4  47A0     		blx r4
-300003F6  E8BD 0021		ldmia sp!, { r0, r5 }
-
-#80			LD		OIL_PRES_DELAY.Q {R:8$59}
-(*) UNDEF
-300003FA  F8DF 732C		ldr r7, [pc, #+812] ; 0x24002C08
-300003FE  7838     		ldrb r0, [r7]
-
-#81			AND		LOW_OIL {R:8$19}
-(*) BOOL
-30000400  F8DF 7398		ldr r7, [pc, #+920] ; 0x2403D750
-30000404  783F     		ldrb r7, [r7]
-30000406  4038     		and r0, r0, r7
-
-#82			ST		$$VAR$1
-(*) BOOL
-30000408  F8DF 7300		ldr r7, [pc, #+768] ; 0x24002BF8
-3000040C  7038     		strb r0, [r7]
-
-#83			JMPCN	$$LAB$4
-(-) BOOL
+30000408  F8DF 7470		ldr r7, [pc, #+1136] ; 0x2403D74C
+3000040C  7838     		ldrb r0, [r7]
 3000040E  2800     		cmp r0, #0
-30000410  D005     		beq #10 ; 0x3000041E
+30000410  BF08 2001		eqmov r0, #1
+30000414  BF18 2000		nemov r0, #0
+
+#69			ST		$$VAR$1
+(*) BOOL
+30000418  F8DF 73C4		ldr r7, [pc, #+964] ; 0x24002BF8
+3000041C  7038     		strb r0, [r7]
+
+#70			JMPCN	$$LAB$2
+(-) BOOL
+3000041E  2800     		cmp r0, #0
+30000420  D006     		beq #12 ; 0x30000430
 
 
-#84			LD		1000 {R:8$82}
+#71			LD		10000 {R:7$89}
 (*) UNDEF
-30000414  F44F 707A		mov r0, #1000 ; 1000
+30000424  F8DF 7378		ldr r7, [pc, #+888] ; 0x2710
+30000428  4638     		mov r0, r7
 
-#85			ST		BLINK_RATE {R:8$83}
+#72			ST		BLINK_RATE {R:7$88}
 (*) UINT
-30000418  F8DF 72CC		ldr r7, [pc, #+716] ; 0x24002BCE
-3000041C  8038     		strh r0, [r7]
+3000042A  F8DF 7390		ldr r7, [pc, #+912] ; 0x24002BCE
+3000042E  8038     		strh r0, [r7]
 
-#86		$$LAB$4:
-#87			LD		$$VAR$1
+#73		$$LAB$2:
+#74			LD		$$VAR$1
 (*) UNDEF
-3000041E  F8DF 72EC		ldr r7, [pc, #+748] ; 0x24002BF8
-30000422  7838     		ldrb r0, [r7]
+30000430  F8DF 73AC		ldr r7, [pc, #+940] ; 0x24002BF8
+30000434  7838     		ldrb r0, [r7]
 
-#88			S		LOW_OIL_FAULT {R:8$77}
+#75			S		E_STOP_FAULT {R:7$90}
 (*) BOOL
-30000424  2800     		cmp r0, #0
-30000426  D009     		beq #0x000012
-30000428  B082     		sub sp, sp, #8
-3000042A  F8CD 0000		str r0, [sp]
-3000042E  2001     		mov r0, #1
-30000430  F8DF 72A4		ldr r7, [pc, #+676] ; 0x24002BC6
-30000434  7038     		strb r0, [r7]
-30000436  F8DD 0000		ldr r0, [sp]
-3000043A  B002     		add sp, sp, #8
+30000436  2800     		cmp r0, #0
+30000438  D009     		beq #0x000012
+3000043A  B082     		sub sp, sp, #8
+3000043C  F8CD 0000		str r0, [sp]
+30000440  2001     		mov r0, #1
+30000442  F8DF 73A0		ldr r7, [pc, #+928] ; 0x24002BF9
+30000446  7038     		strb r0, [r7]
+30000448  F8DD 0000		ldr r0, [sp]
+3000044C  B002     		add sp, sp, #8
 
-#89		 
-#90			(* Network 9 *)
-#91		Manual_Override:
-#92			LDN		STOP {R:9$0}
+#76		 
+#77			(* Network 8 *)
+#78		Motor_Temp:
+#79			LDN		TEMP_SENSOR {R:8$19}
 (*) UNDEF
-3000043C  F8DF 734C		ldr r7, [pc, #+844] ; 0x2403D748
-30000440  7838     		ldrb r0, [r7]
-30000442  2800     		cmp r0, #0
-30000444  BF08 2001		eqmov r0, #1
-30000448  BF18 2000		nemov r0, #0
+3000044E  F8DF 7438		ldr r7, [pc, #+1080] ; 0x2403D752
+30000452  7838     		ldrb r0, [r7]
+30000454  2800     		cmp r0, #0
+30000456  BF08 2001		eqmov r0, #1
+3000045A  BF18 2000		nemov r0, #0
 
-#93			OR		USER_BUTTON {R:9$25}
+#80			ST		$$VAR$1
 (*) BOOL
-3000044C  F8DF 7358		ldr r7, [pc, #+856] ; 0x2403D758
-30000450  783F     		ldrb r7, [r7]
-30000452  4338     		orr r0, r0, r7
+3000045E  F8DF 7380		ldr r7, [pc, #+896] ; 0x24002BF8
+30000462  7038     		strb r0, [r7]
 
-#94			ST		SHUTDOWN_RESET.IN {R:9$14}
+#81			JMPCN	$$LAB$3
+(-) BOOL
+30000464  2800     		cmp r0, #0
+30000466  D005     		beq #10 ; 0x30000474
+
+
+#82			LD		2000 {R:8$89}
+(*) UNDEF
+3000046A  F44F 60FA		mov r0, #2000 ; 2000
+
+#83			ST		BLINK_RATE {R:8$88}
+(*) UINT
+3000046E  F8DF 734C		ldr r7, [pc, #+844] ; 0x24002BCE
+30000472  8038     		strh r0, [r7]
+
+#84		$$LAB$3:
+#85			LD		$$VAR$1
+(*) UNDEF
+30000474  F8DF 7368		ldr r7, [pc, #+872] ; 0x24002BF8
+30000478  7838     		ldrb r0, [r7]
+
+#86			S		MOTOR_TEMP_FAULT {R:8$80}
 (*) BOOL
-30000454  F8DF 72D8		ldr r7, [pc, #+728] ; 0x24002C14
-30000458  7038     		strb r0, [r7]
+3000047A  2800     		cmp r0, #0
+3000047C  D009     		beq #0x000012
+3000047E  B082     		sub sp, sp, #8
+30000480  F8CD 0000		str r0, [sp]
+30000484  2001     		mov r0, #1
+30000486  F8DF 7330		ldr r7, [pc, #+816] ; 0x24002BCD
+3000048A  7038     		strb r0, [r7]
+3000048C  F8DD 0000		ldr r0, [sp]
+30000490  B002     		add sp, sp, #8
 
-#95			MOVE		2000,SHUTDOWN_RESET.PT {R:9$14}
+#87		 
+#88			(* Network 9 *)
+#89		Oil_Monitor:
+#90			LD		MOTOR {R:9$21}
+(*) UNDEF
+30000492  F8DF 7400		ldr r7, [pc, #+1024] ; 0x2403D759
+30000496  7838     		ldrb r0, [r7]
+
+#91			ST		OIL_PRES_DELAY.IN {R:9$59}
 (*) BOOL
-3000045A  F44F 60FA		mov r0, #2000 ; 2000
-3000045E  F8DF 72D4		ldr r7, [pc, #+724] ; 0x24002C18
-30000462  6038     		str r0, [r7]
+30000498  F8DF 7358		ldr r7, [pc, #+856] ; 0x24002C00
+3000049C  7038     		strb r0, [r7]
 
-#96			CAL		SHUTDOWN_RESET {R:9$14}
+#92			MOVE		5000,OIL_PRES_DELAY.PT {R:9$59}
+(*) BOOL
+3000049E  F8DF 72FC		ldr r7, [pc, #+764] ; 0x1388
+300004A2  4638     		mov r0, r7
+300004A4  F8DF 7350		ldr r7, [pc, #+848] ; 0x24002C04
+300004A8  6038     		str r0, [r7]
+
+#93			CAL		OIL_PRES_DELAY {R:9$59}
 (*) UDINT
-30000464  E92D 0021		stmdb sp!, { r0, r5 }
-30000468  F8DF 52C0		ldr r5, [pc, #+704] ; 0x24002C10
-3000046C  F8DF 4350		ldr r4, [pc, #+848] ; 0x3000014C
-30000470  F044 0401		orr r4, r4, #1
-30000474  47A0     		blx r4
-30000476  E8BD 0021		ldmia sp!, { r0, r5 }
+300004AA  E92D 0021		stmdb sp!, { r0, r5 }
+300004AE  F8DF 5340		ldr r5, [pc, #+832] ; 0x24002BFC
+300004B2  F8DF 43F4		ldr r4, [pc, #+1012] ; 0x3000014C
+300004B6  F044 0401		orr r4, r4, #1
+300004BA  47A0     		blx r4
+300004BC  E8BD 0021		ldmia sp!, { r0, r5 }
 
-#97			LD		SHUTDOWN_RESET.Q {R:9$14}
+#94			LD		OIL_PRES_DELAY.Q {R:9$59}
 (*) UNDEF
-3000047A  F8DF 72BC		ldr r7, [pc, #+700] ; 0x24002C1C
-3000047E  7838     		ldrb r0, [r7]
+300004C0  F8DF 7338		ldr r7, [pc, #+824] ; 0x24002C08
+300004C4  7838     		ldrb r0, [r7]
 
-#98			R		WARN_LED {R:9$2}
+#95			AND		LOW_OIL {R:9$19}
 (*) BOOL
-30000480  2800     		cmp r0, #0
-30000482  D009     		beq #0x000012
-30000484  B082     		sub sp, sp, #8
-30000486  F8CD 0000		str r0, [sp]
-3000048A  2000     		mov r0, #0
-3000048C  F8DF 72E8		ldr r7, [pc, #+744] ; 0x2403D742
-30000490  7038     		strb r0, [r7]
-30000492  F8DD 0000		ldr r0, [sp]
-30000496  B002     		add sp, sp, #8
+300004C6  F8DF 73BC		ldr r7, [pc, #+956] ; 0x2403D750
+300004CA  783F     		ldrb r7, [r7]
+300004CC  4038     		and r0, r0, r7
 
-#99			R		WARN_LIGHT {R:9$3}
+#96			ST		$$VAR$1
 (*) BOOL
-30000498  2800     		cmp r0, #0
-3000049A  D009     		beq #0x000012
-3000049C  B082     		sub sp, sp, #8
-3000049E  F8CD 0000		str r0, [sp]
-300004A2  2000     		mov r0, #0
-300004A4  F8DF 730C		ldr r7, [pc, #+780] ; 0x2403D75B
-300004A8  7038     		strb r0, [r7]
-300004AA  F8DD 0000		ldr r0, [sp]
-300004AE  B002     		add sp, sp, #8
+300004CE  F8DF 7310		ldr r7, [pc, #+784] ; 0x24002BF8
+300004D2  7038     		strb r0, [r7]
 
-#100			R		MOTOR_OL_FAULT {R:9$6}
-(*) BOOL
-300004B0  2800     		cmp r0, #0
-300004B2  D009     		beq #0x000012
-300004B4  B082     		sub sp, sp, #8
-300004B6  F8CD 0000		str r0, [sp]
-300004BA  2000     		mov r0, #0
-300004BC  F8DF 7220		ldr r7, [pc, #+544] ; 0x24002BCC
-300004C0  7038     		strb r0, [r7]
-300004C2  F8DD 0000		ldr r0, [sp]
-300004C6  B002     		add sp, sp, #8
+#97			JMPCN	$$LAB$4
+(-) BOOL
+300004D4  2800     		cmp r0, #0
+300004D6  D005     		beq #10 ; 0x300004E4
 
-#101			R		LOW_OIL_FAULT {R:9$7}
-(*) BOOL
-300004C8  2800     		cmp r0, #0
-300004CA  D009     		beq #0x000012
-300004CC  B082     		sub sp, sp, #8
-300004CE  F8CD 0000		str r0, [sp]
-300004D2  2000     		mov r0, #0
-300004D4  F8DF 7200		ldr r7, [pc, #+512] ; 0x24002BC6
-300004D8  7038     		strb r0, [r7]
-300004DA  F8DD 0000		ldr r0, [sp]
-300004DE  B002     		add sp, sp, #8
 
-#102			R		MOTOR_TEMP_FAULT {R:9$9}
-(*) BOOL
-300004E0  2800     		cmp r0, #0
-300004E2  D009     		beq #0x000012
-300004E4  B082     		sub sp, sp, #8
-300004E6  F8CD 0000		str r0, [sp]
-300004EA  2000     		mov r0, #0
-300004EC  F8DF 71F4		ldr r7, [pc, #+500] ; 0x24002BCD
-300004F0  7038     		strb r0, [r7]
-300004F2  F8DD 0000		ldr r0, [sp]
-300004F6  B002     		add sp, sp, #8
-
-#103			R		E_STOP_FAULT {R:9$10}
-(*) BOOL
-300004F8  2800     		cmp r0, #0
-300004FA  D009     		beq #0x000012
-300004FC  B082     		sub sp, sp, #8
-300004FE  F8CD 0000		str r0, [sp]
-30000502  2000     		mov r0, #0
-30000504  F8DF 7208		ldr r7, [pc, #+520] ; 0x24002BF9
-30000508  7038     		strb r0, [r7]
-3000050A  F8DD 0000		ldr r0, [sp]
-3000050E  B002     		add sp, sp, #8
-
-#104			R		FAULT_LED {R:9$11}
-(*) BOOL
-30000510  2800     		cmp r0, #0
-30000512  D009     		beq #0x000012
-30000514  B082     		sub sp, sp, #8
-30000516  F8CD 0000		str r0, [sp]
-3000051A  2000     		mov r0, #0
-3000051C  F8DF 7260		ldr r7, [pc, #+608] ; 0x2403D744
-30000520  7038     		strb r0, [r7]
-30000522  F8DD 0000		ldr r0, [sp]
-30000526  B002     		add sp, sp, #8
-
-#105		 
-#106			(* Network 10 *)
-#107		At_Pressure_Standby:
-#108			LDN		PRESSURE_SENSOR {R:10$2}
+#98			LD		1000 {R:9$82}
 (*) UNDEF
-30000528  F8DF 726C		ldr r7, [pc, #+620] ; 0x2403D74E
-3000052C  7838     		ldrb r0, [r7]
-3000052E  2800     		cmp r0, #0
-30000530  BF08 2001		eqmov r0, #1
-30000534  BF18 2000		nemov r0, #0
+300004DA  F44F 707A		mov r0, #1000 ; 1000
 
-#109			ST		MOTOR_STANDBY {R:10$1}
-(*) BOOL
-30000538  F8DF 71A0		ldr r7, [pc, #+416] ; 0x24002BC7
-3000053C  7038     		strb r0, [r7]
+#99			ST		BLINK_RATE {R:9$83}
+(*) UINT
+300004DE  F8DF 72DC		ldr r7, [pc, #+732] ; 0x24002BCE
+300004E2  8038     		strh r0, [r7]
 
-#110		 
-#111			(* Network 11 *)
-#112		Fault_Lighting:
-#113			LD		LOW_OIL_FAULT {R:11$0}
+#100		$$LAB$4:
+#101			LD		$$VAR$1
 (*) UNDEF
-3000053E  F8DF 7198		ldr r7, [pc, #+408] ; 0x24002BC6
-30000542  7838     		ldrb r0, [r7]
+300004E4  F8DF 72F8		ldr r7, [pc, #+760] ; 0x24002BF8
+300004E8  7838     		ldrb r0, [r7]
 
-#114			OR		MOTOR_OL_FAULT {R:11$2}
+#102			S		LOW_OIL_FAULT {R:9$77}
 (*) BOOL
-30000544  F8DF 7198		ldr r7, [pc, #+408] ; 0x24002BCC
-30000548  783F     		ldrb r7, [r7]
-3000054A  4338     		orr r0, r0, r7
+300004EA  2800     		cmp r0, #0
+300004EC  D009     		beq #0x000012
+300004EE  B082     		sub sp, sp, #8
+300004F0  F8CD 0000		str r0, [sp]
+300004F4  2001     		mov r0, #1
+300004F6  F8DF 72B4		ldr r7, [pc, #+692] ; 0x24002BC6
+300004FA  7038     		strb r0, [r7]
+300004FC  F8DD 0000		ldr r0, [sp]
+30000500  B002     		add sp, sp, #8
 
-#115			OR		MOTOR_TEMP_FAULT {R:11$4}
-(*) BOOL
-3000054C  F8DF 7194		ldr r7, [pc, #+404] ; 0x24002BCD
-30000550  783F     		ldrb r7, [r7]
-30000552  4338     		orr r0, r0, r7
-
-#116			ORN		EMERGENCY_STOP {R:11$40}
-(*) BOOL
-30000554  F8DF 723C		ldr r7, [pc, #+572] ; 0x2403D74C
-30000558  783F     		ldrb r7, [r7]
-3000055A  2F00     		cmp r7, #0
-3000055C  BF08 2701		eqmov r7, #1
-30000560  BF18 2700		nemov r7, #0
-30000564  4338     		orr r0, r0, r7
-
-#117			ST		WARN_LED {R:11$1}
-(*) BOOL
-30000566  F8DF 7210		ldr r7, [pc, #+528] ; 0x2403D742
-3000056A  7038     		strb r0, [r7]
-
-#118			ST		WARN_LIGHT {R:11$7}
-(*) BOOL
-3000056C  F8DF 7244		ldr r7, [pc, #+580] ; 0x2403D75B
-30000570  7038     		strb r0, [r7]
-
-#119			ST		FAULT_MODE {R:11$47}
-(*) BOOL
-30000572  F8DF 71A4		ldr r7, [pc, #+420] ; 0x24002BFB
-30000576  7038     		strb r0, [r7]
-
-#120		 
-#121			(* Network 12 *)
-#122			LD		WARN_LIGHT {R:12$0}
+#103		 
+#104			(* Network 10 *)
+#105		Manual_Override:
+#106			LDN		STOP {R:10$0}
 (*) UNDEF
-30000578  F8DF 7238		ldr r7, [pc, #+568] ; 0x2403D75B
-3000057C  7838     		ldrb r0, [r7]
+30000502  F8DF 7370		ldr r7, [pc, #+880] ; 0x2403D748
+30000506  7838     		ldrb r0, [r7]
+30000508  2800     		cmp r0, #0
+3000050A  BF08 2001		eqmov r0, #1
+3000050E  BF18 2000		nemov r0, #0
 
-#123			ST		WARN_LED {R:12$1}
+#107			OR		USER_BUTTON {R:10$25}
 (*) BOOL
-3000057E  F8DF 71F8		ldr r7, [pc, #+504] ; 0x2403D742
-30000582  7038     		strb r0, [r7]
+30000512  F8DF 737C		ldr r7, [pc, #+892] ; 0x2403D758
+30000516  783F     		ldrb r7, [r7]
+30000518  4338     		orr r0, r0, r7
+
+#108			ST		SHUTDOWN_RESET.IN {R:10$14}
+(*) BOOL
+3000051A  F8DF 72E8		ldr r7, [pc, #+744] ; 0x24002C14
+3000051E  7038     		strb r0, [r7]
+
+#109			MOVE		2000,SHUTDOWN_RESET.PT {R:10$14}
+(*) BOOL
+30000520  F44F 60FA		mov r0, #2000 ; 2000
+30000524  F8DF 72E0		ldr r7, [pc, #+736] ; 0x24002C18
+30000528  6038     		str r0, [r7]
+
+#110			CAL		SHUTDOWN_RESET {R:10$14}
+(*) UDINT
+3000052A  E92D 0021		stmdb sp!, { r0, r5 }
+3000052E  F8DF 52D0		ldr r5, [pc, #+720] ; 0x24002C10
+30000532  F8DF 4374		ldr r4, [pc, #+884] ; 0x3000014C
+30000536  F044 0401		orr r4, r4, #1
+3000053A  47A0     		blx r4
+3000053C  E8BD 0021		ldmia sp!, { r0, r5 }
+
+#111			LD		SHUTDOWN_RESET.Q {R:10$14}
+(*) UNDEF
+30000540  F8DF 72C8		ldr r7, [pc, #+712] ; 0x24002C1C
+30000544  7838     		ldrb r0, [r7]
+
+#112			R		WARN_LED {R:10$2}
+(*) BOOL
+30000546  2800     		cmp r0, #0
+30000548  D009     		beq #0x000012
+3000054A  B082     		sub sp, sp, #8
+3000054C  F8CD 0000		str r0, [sp]
+30000550  2000     		mov r0, #0
+30000552  F8DF 730C		ldr r7, [pc, #+780] ; 0x2403D742
+30000556  7038     		strb r0, [r7]
+30000558  F8DD 0000		ldr r0, [sp]
+3000055C  B002     		add sp, sp, #8
+
+#113			R		WARN_LIGHT {R:10$3}
+(*) BOOL
+3000055E  2800     		cmp r0, #0
+30000560  D009     		beq #0x000012
+30000562  B082     		sub sp, sp, #8
+30000564  F8CD 0000		str r0, [sp]
+30000568  2000     		mov r0, #0
+3000056A  F8DF 7330		ldr r7, [pc, #+816] ; 0x2403D75B
+3000056E  7038     		strb r0, [r7]
+30000570  F8DD 0000		ldr r0, [sp]
+30000574  B002     		add sp, sp, #8
+
+#114			R		MOTOR_OL_FAULT {R:10$6}
+(*) BOOL
+30000576  2800     		cmp r0, #0
+30000578  D009     		beq #0x000012
+3000057A  B082     		sub sp, sp, #8
+3000057C  F8CD 0000		str r0, [sp]
+30000580  2000     		mov r0, #0
+30000582  F8DF 7230		ldr r7, [pc, #+560] ; 0x24002BCC
+30000586  7038     		strb r0, [r7]
+30000588  F8DD 0000		ldr r0, [sp]
+3000058C  B002     		add sp, sp, #8
+
+#115			R		LOW_OIL_FAULT {R:10$7}
+(*) BOOL
+3000058E  2800     		cmp r0, #0
+30000590  D009     		beq #0x000012
+30000592  B082     		sub sp, sp, #8
+30000594  F8CD 0000		str r0, [sp]
+30000598  2000     		mov r0, #0
+3000059A  F8DF 7210		ldr r7, [pc, #+528] ; 0x24002BC6
+3000059E  7038     		strb r0, [r7]
+300005A0  F8DD 0000		ldr r0, [sp]
+300005A4  B002     		add sp, sp, #8
+
+#116			S		MOTOR_TEMP_FAULT {R:10$9}
+(*) BOOL
+300005A6  2800     		cmp r0, #0
+300005A8  D009     		beq #0x000012
+300005AA  B082     		sub sp, sp, #8
+300005AC  F8CD 0000		str r0, [sp]
+300005B0  2001     		mov r0, #1
+300005B2  F8DF 7204		ldr r7, [pc, #+516] ; 0x24002BCD
+300005B6  7038     		strb r0, [r7]
+300005B8  F8DD 0000		ldr r0, [sp]
+300005BC  B002     		add sp, sp, #8
+
+#117			R		E_STOP_FAULT {R:10$10}
+(*) BOOL
+300005BE  2800     		cmp r0, #0
+300005C0  D009     		beq #0x000012
+300005C2  B082     		sub sp, sp, #8
+300005C4  F8CD 0000		str r0, [sp]
+300005C8  2000     		mov r0, #0
+300005CA  F8DF 7218		ldr r7, [pc, #+536] ; 0x24002BF9
+300005CE  7038     		strb r0, [r7]
+300005D0  F8DD 0000		ldr r0, [sp]
+300005D4  B002     		add sp, sp, #8
+
+#118			R		FAULT_LED {R:10$11}
+(*) BOOL
+300005D6  2800     		cmp r0, #0
+300005D8  D009     		beq #0x000012
+300005DA  B082     		sub sp, sp, #8
+300005DC  F8CD 0000		str r0, [sp]
+300005E0  2000     		mov r0, #0
+300005E2  F8DF 7284		ldr r7, [pc, #+644] ; 0x2403D744
+300005E6  7038     		strb r0, [r7]
+300005E8  F8DD 0000		ldr r0, [sp]
+300005EC  B002     		add sp, sp, #8
+
+#119		 
+#120			(* Network 11 *)
+#121		At_Pressure_Standby:
+#122			LDN		PRESSURE_SENSOR {R:11$2}
+(*) UNDEF
+300005EE  F8DF 7290		ldr r7, [pc, #+656] ; 0x2403D74E
+300005F2  7838     		ldrb r0, [r7]
+300005F4  2800     		cmp r0, #0
+300005F6  BF08 2001		eqmov r0, #1
+300005FA  BF18 2000		nemov r0, #0
+
+#123			ST		MOTOR_STANDBY {R:11$1}
+(*) BOOL
+300005FE  F8DF 71B0		ldr r7, [pc, #+432] ; 0x24002BC7
+30000602  7038     		strb r0, [r7]
 
 #124		 
-#125			(* Network 13 *)
-#126			LD		WARN_BUZZ {R:13$0}
+#125			(* Network 12 *)
+#126		Fault_Lighting:
+#127			LD		LOW_OIL_FAULT {R:12$0}
 (*) UNDEF
-30000584  F8DF 7230		ldr r7, [pc, #+560] ; 0x2403D75C
-30000588  7838     		ldrb r0, [r7]
+30000604  F8DF 71A4		ldr r7, [pc, #+420] ; 0x24002BC6
+30000608  7838     		ldrb r0, [r7]
 
-#127			ST		BUZZ_LED {R:13$1}
+#128			OR		MOTOR_OL_FAULT {R:12$2}
 (*) BOOL
-3000058A  F8DF 71F0		ldr r7, [pc, #+496] ; 0x2403D743
-3000058E  7038     		strb r0, [r7]
+3000060A  F8DF 71A8		ldr r7, [pc, #+424] ; 0x24002BCC
+3000060E  783F     		ldrb r7, [r7]
+30000610  4338     		orr r0, r0, r7
 
-#128		 
-#129			(* Network 14 *)
-#130			LD		MOTOR {R:14$0}
+#129			ORN		MOTOR_TEMP_FAULT {R:12$4}
+(*) BOOL
+30000612  F8DF 71A4		ldr r7, [pc, #+420] ; 0x24002BCD
+30000616  783F     		ldrb r7, [r7]
+30000618  2F00     		cmp r7, #0
+3000061A  BF08 2701		eqmov r7, #1
+3000061E  BF18 2700		nemov r7, #0
+30000622  4338     		orr r0, r0, r7
+
+#130			ORN		EMERGENCY_STOP {R:12$40}
+(*) BOOL
+30000624  F8DF 7254		ldr r7, [pc, #+596] ; 0x2403D74C
+30000628  783F     		ldrb r7, [r7]
+3000062A  2F00     		cmp r7, #0
+3000062C  BF08 2701		eqmov r7, #1
+30000630  BF18 2700		nemov r7, #0
+30000634  4338     		orr r0, r0, r7
+
+#131			ST		WARN_LED {R:12$1}
+(*) BOOL
+30000636  F8DF 7228		ldr r7, [pc, #+552] ; 0x2403D742
+3000063A  7038     		strb r0, [r7]
+
+#132			ST		WARN_LIGHT {R:12$7}
+(*) BOOL
+3000063C  F8DF 725C		ldr r7, [pc, #+604] ; 0x2403D75B
+30000640  7038     		strb r0, [r7]
+
+#133			ST		FAULT_MODE {R:12$47}
+(*) BOOL
+30000642  F8DF 71A8		ldr r7, [pc, #+424] ; 0x24002BFB
+30000646  7038     		strb r0, [r7]
+
+#134		 
+#135			(* Network 13 *)
+#136			LD		WARN_LIGHT {R:13$0}
 (*) UNDEF
-30000590  F8DF 7218		ldr r7, [pc, #+536] ; 0x2403D759
-30000594  7838     		ldrb r0, [r7]
+30000648  F8DF 7250		ldr r7, [pc, #+592] ; 0x2403D75B
+3000064C  7838     		ldrb r0, [r7]
 
-#131			ST		MOTOR_LED {R:14$1}
+#137			ST		WARN_LED {R:13$1}
 (*) BOOL
-30000596  F8DF 71D8		ldr r7, [pc, #+472] ; 0x2403D740
-3000059A  7038     		strb r0, [r7]
+3000064E  F8DF 7210		ldr r7, [pc, #+528] ; 0x2403D742
+30000652  7038     		strb r0, [r7]
 
-#132			ST		OK_LED {R:14$2}
-(*) BOOL
-3000059C  F8DF 71E4		ldr r7, [pc, #+484] ; 0x2403D745
-300005A0  7038     		strb r0, [r7]
-
-#133		 
-#134			(* Network 15 *)
-#135			LD		ACD {R:15$0}
+#138		 
+#139			(* Network 14 *)
+#140			LD		WARN_BUZZ {R:14$0}
 (*) UNDEF
-300005A2  F8DF 720C		ldr r7, [pc, #+524] ; 0x2403D75A
-300005A6  7838     		ldrb r0, [r7]
+30000654  F8DF 7248		ldr r7, [pc, #+584] ; 0x2403D75C
+30000658  7838     		ldrb r0, [r7]
 
-#136			ST		ACD_LED {R:15$1}
+#141			ST		BUZZ_LED {R:14$1}
 (*) BOOL
-300005A8  F8DF 71C8		ldr r7, [pc, #+456] ; 0x2403D741
-300005AC  7038     		strb r0, [r7]
+3000065A  F8DF 7208		ldr r7, [pc, #+520] ; 0x2403D743
+3000065E  7038     		strb r0, [r7]
 
-#137		 
-#138			(* Network 16 *)
-#139			LD		MOTOR_STANDBY {R:16$0}
+#142		 
+#143			(* Network 15 *)
+#144			LD		MOTOR {R:15$0}
 (*) UNDEF
-300005AE  F8DF 712C		ldr r7, [pc, #+300] ; 0x24002BC7
-300005B2  7838     		ldrb r0, [r7]
+30000660  F8DF 7230		ldr r7, [pc, #+560] ; 0x2403D759
+30000664  7838     		ldrb r0, [r7]
 
-#140			ST		STANDBY_LED {R:16$1}
+#145			ST		MOTOR_LED {R:15$1}
 (*) BOOL
-300005B4  F8DF 71D0		ldr r7, [pc, #+464] ; 0x2403D746
-300005B8  7038     		strb r0, [r7]
+30000666  F8DF 71F0		ldr r7, [pc, #+496] ; 0x2403D740
+3000066A  7038     		strb r0, [r7]
 
-#141		 
-#142			(* Network 17 *)
-#143		Fault_Code_On:
-#144			LD		FAULT_MODE {R:17$15}
-(*) UNDEF
-300005BA  F8DF 715C		ldr r7, [pc, #+348] ; 0x24002BFB
-300005BE  7838     		ldrb r0, [r7]
-
-#145			AND		FLASH {R:17$0}
+#146			ST		OK_LED {R:15$2}
 (*) BOOL
-300005C0  F8DF 7150		ldr r7, [pc, #+336] ; 0x24002BFA
-300005C4  783F     		ldrb r7, [r7]
-300005C6  4038     		and r0, r0, r7
-
-#146			ST		FLASHER.IN {R:17$8}
-(*) BOOL
-300005C8  F8DF 7174		ldr r7, [pc, #+372] ; 0x24002C28
-300005CC  7038     		strb r0, [r7]
-
-#147			MOVE		BLINK_RATE,FLASHER.PT {R:17$8}
-(*) BOOL
-300005CE  F8DF 7118		ldr r7, [pc, #+280] ; 0x24002BCE
-300005D2  8838     		ldrh r0, [r7]
-300005D4  F8DF 716C		ldr r7, [pc, #+364] ; 0x24002C2C
-300005D8  6038     		str r0, [r7]
-
-#148			CAL		FLASHER {R:17$8}
-(*) UDINT
-300005DA  E92D 0021		stmdb sp!, { r0, r5 }
-300005DE  F8DF 515C		ldr r5, [pc, #+348] ; 0x24002C24
-300005E2  F8DF 41DC		ldr r4, [pc, #+476] ; 0x3000014C
-300005E6  F044 0401		orr r4, r4, #1
-300005EA  47A0     		blx r4
-300005EC  E8BD 0021		ldmia sp!, { r0, r5 }
-
-#149			LD		FLASHER.Q {R:17$8}
-(*) UNDEF
-300005F0  F8DF 7154		ldr r7, [pc, #+340] ; 0x24002C30
-300005F4  7838     		ldrb r0, [r7]
-
-#150			ST		FLASH {R:17$1}
-(*) BOOL
-300005F6  F8DF 711C		ldr r7, [pc, #+284] ; 0x24002BFA
-300005FA  7038     		strb r0, [r7]
-
-#151			R		FAULT_LED {R:17$14}
-(*) BOOL
-300005FC  2800     		cmp r0, #0
-300005FE  D009     		beq #0x000012
-30000600  B082     		sub sp, sp, #8
-30000602  F8CD 0000		str r0, [sp]
-30000606  2000     		mov r0, #0
-30000608  F8DF 7174		ldr r7, [pc, #+372] ; 0x2403D744
-3000060C  7038     		strb r0, [r7]
-3000060E  F8DD 0000		ldr r0, [sp]
-30000612  B002     		add sp, sp, #8
-
-#152		 
-#153			(* Network 18 *)
-#154		Fault_Code_Off:
-#155			LD		FAULT_MODE {R:18$37}
-(*) UNDEF
-30000614  F8DF 7100		ldr r7, [pc, #+256] ; 0x24002BFB
-30000618  7838     		ldrb r0, [r7]
-
-#156			ANDN		FLASH {R:18$9}
-(*) BOOL
-3000061A  F8DF 70F8		ldr r7, [pc, #+248] ; 0x24002BFA
-3000061E  783F     		ldrb r7, [r7]
-30000620  2F00     		cmp r7, #0
-30000622  BF08 2701		eqmov r7, #1
-30000626  BF18 2700		nemov r7, #0
-3000062A  4038     		and r0, r0, r7
-
-#157			ST		$$VAR$1
-(*) BOOL
-3000062C  F8DF 70DC		ldr r7, [pc, #+220] ; 0x24002BF8
-30000630  7038     		strb r0, [r7]
-
-#158			JMPCN	$$LAB$5
-(-) BOOL
-30000632  2800     		cmp r0, #0
-30000634  D017     		beq #46 ; 0x30000666
-
-
-#159			LD		BLINK_RATE {R:18$41}
-(*) UNDEF
-30000638  F8DF 70AC		ldr r7, [pc, #+172] ; 0x24002BCE
-3000063C  8838     		ldrh r0, [r7]
-
-#160			DIV	10 {R:18$39}
-(*) UINT
-3000063E  270A     		mov r7, #10 ; 10
-30000640  B082     		sub sp, sp, #8
-30000642  F8CD 1000		str r1, [sp]
-30000646  4639     		mov r1, r7
-30000648  FBB0 F0F1		udiv r0, r0, r1
-3000064C  F8DD 1000		ldr r1, [sp]
-30000650  B002     		add sp, sp, #8
-
-#161			ST		BLINKOFF_RATE {R:18$43}
-(*) UINT
-30000652  F8DF 7108		ldr r7, [pc, #+264] ; 0x24002C4E
-30000656  B082     		sub sp, sp, #8
-30000658  F8CD 0000		str r0, [sp]
-3000065C  B200     		sxth r0, r0
-3000065E  8038     		strh r0, [r7]
-30000660  F8DD 0000		ldr r0, [sp]
-30000664  B002     		add sp, sp, #8
-
-#162		$$LAB$5:
-#163			LD		$$VAR$1
-(*) UNDEF
-30000666  F8DF 70A4		ldr r7, [pc, #+164] ; 0x24002BF8
-3000066A  7838     		ldrb r0, [r7]
-
-#164			ST		FLASHER_OFF.IN {R:18$27}
-(*) BOOL
-3000066C  F8DF 70E0		ldr r7, [pc, #+224] ; 0x24002C3C
+3000066C  F8DF 71FC		ldr r7, [pc, #+508] ; 0x2403D745
 30000670  7038     		strb r0, [r7]
 
-#165			MOVE		BLINKOFF_RATE,FLASHER_OFF.PT {R:18$27}
-(*) BOOL
-30000672  F8DF 70E8		ldr r7, [pc, #+232] ; 0x24002C4E
-30000676  F9B7 0000		ldrsh r0, [r7]
-3000067A  F8DF 70D8		ldr r7, [pc, #+216] ; 0x24002C40
-3000067E  6038     		str r0, [r7]
-
-#166			CAL		FLASHER_OFF {R:18$27}
-(*) UDINT
-30000680  E92D 0021		stmdb sp!, { r0, r5 }
-30000684  F8DF 50C4		ldr r5, [pc, #+196] ; 0x24002C38
-30000688  F8DF 4134		ldr r4, [pc, #+308] ; 0x3000014C
-3000068C  F044 0401		orr r4, r4, #1
-30000690  47A0     		blx r4
-30000692  E8BD 0021		ldmia sp!, { r0, r5 }
-
-#167			LD		FLASHER_OFF.Q {R:18$27}
+#147		 
+#148			(* Network 16 *)
+#149			LD		ACD {R:16$0}
 (*) UNDEF
-30000696  F8DF 70C0		ldr r7, [pc, #+192] ; 0x24002C44
-3000069A  7838     		ldrb r0, [r7]
+30000672  F8DF 7224		ldr r7, [pc, #+548] ; 0x2403D75A
+30000676  7838     		ldrb r0, [r7]
 
-#168			ST		FLASH {R:18$1}
+#150			ST		ACD_LED {R:16$1}
 (*) BOOL
-3000069C  F8DF 7074		ldr r7, [pc, #+116] ; 0x24002BFA
-300006A0  7038     		strb r0, [r7]
+30000678  F8DF 71E0		ldr r7, [pc, #+480] ; 0x2403D741
+3000067C  7038     		strb r0, [r7]
 
-#169			S		FAULT_LED {R:18$36}
+#151		 
+#152			(* Network 17 *)
+#153			LD		MOTOR_STANDBY {R:17$0}
+(*) UNDEF
+3000067E  F8DF 7130		ldr r7, [pc, #+304] ; 0x24002BC7
+30000682  7838     		ldrb r0, [r7]
+
+#154			ST		STANDBY_LED {R:17$1}
 (*) BOOL
-300006A2  2800     		cmp r0, #0
-300006A4  D009     		beq #0x000012
-300006A6  B082     		sub sp, sp, #8
-300006A8  F8CD 0000		str r0, [sp]
-300006AC  2001     		mov r0, #1
-300006AE  F8DF 70D0		ldr r7, [pc, #+208] ; 0x2403D744
-300006B2  7038     		strb r0, [r7]
-300006B4  F8DD 0000		ldr r0, [sp]
-300006B8  B002     		add sp, sp, #8
+30000684  F8DF 71E8		ldr r7, [pc, #+488] ; 0x2403D746
+30000688  7038     		strb r0, [r7]
 
-300006BA  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-300006BE  F8DD E000		ldr lr, [sp]
-300006C2  B002     		add sp, sp, #8
+#155		 
+#156			(* Network 18 *)
+#157		Fault_Code_On:
+#158			LD		FAULT_MODE {R:18$15}
+(*) UNDEF
+3000068A  F8DF 7160		ldr r7, [pc, #+352] ; 0x24002BFB
+3000068E  7838     		ldrb r0, [r7]
 
-300006C4  4770     		bx lr
+#159			AND		FLASH {R:18$0}
+(*) BOOL
+30000690  F8DF 7154		ldr r7, [pc, #+340] ; 0x24002BFA
+30000694  783F     		ldrb r7, [r7]
+30000696  4038     		and r0, r0, r7
 
-300006C8  00001388		; 0x00001388
-300006CC  00002710		; 0x00002710
-300006D0  00007530		; 0x00007530
-300006D4  000493E0		; 0x000493E0
-300006D8  24002BC6		; 0x24002BC6
-300006DC  24002BC7		; 0x24002BC7
-300006E0  24002BCC		; 0x24002BCC
-300006E4  24002BCD		; 0x24002BCD
-300006E8  24002BCE		; 0x24002BCE
-300006EC  24002BD0		; 0x24002BD0
-300006F0  24002BD4		; 0x24002BD4
-300006F4  24002BD8		; 0x24002BD8
-300006F8  24002BDC		; 0x24002BDC
-300006FC  24002BE4		; 0x24002BE4
-30000700  24002BE8		; 0x24002BE8
-30000704  24002BEC		; 0x24002BEC
-30000708  24002BF0		; 0x24002BF0
-3000070C  24002BF8		; 0x24002BF8
-30000710  24002BF9		; 0x24002BF9
-30000714  24002BFA		; 0x24002BFA
-30000718  24002BFB		; 0x24002BFB
-3000071C  24002BFC		; 0x24002BFC
-30000720  24002C00		; 0x24002C00
-30000724  24002C04		; 0x24002C04
-30000728  24002C08		; 0x24002C08
-3000072C  24002C10		; 0x24002C10
-30000730  24002C14		; 0x24002C14
-30000734  24002C18		; 0x24002C18
-30000738  24002C1C		; 0x24002C1C
-3000073C  24002C24		; 0x24002C24
-30000740  24002C28		; 0x24002C28
-30000744  24002C2C		; 0x24002C2C
-30000748  24002C30		; 0x24002C30
-3000074C  24002C38		; 0x24002C38
-30000750  24002C3C		; 0x24002C3C
-30000754  24002C40		; 0x24002C40
-30000758  24002C44		; 0x24002C44
-3000075C  24002C4E		; 0x24002C4E
-30000760  24002C64		; 0x24002C64
-30000764  24002C68		; 0x24002C68
-30000768  24002C6C		; 0x24002C6C
-3000076C  24002C70		; 0x24002C70
-30000770  FFFFFFFF		; 0x2403D740
-30000774  FFFFFFFF		; 0x2403D741
-30000778  FFFFFFFF		; 0x2403D742
-3000077C  FFFFFFFF		; 0x2403D743
-30000780  FFFFFFFF		; 0x2403D744
-30000784  FFFFFFFF		; 0x2403D745
-30000788  FFFFFFFF		; 0x2403D746
-3000078C  FFFFFFFF		; 0x2403D748
-30000790  FFFFFFFF		; 0x2403D74A
-30000794  FFFFFFFF		; 0x2403D74C
-30000798  FFFFFFFF		; 0x2403D74E
-3000079C  FFFFFFFF		; 0x2403D750
-300007A0  FFFFFFFF		; 0x2403D752
-300007A4  FFFFFFFF		; 0x2403D754
-300007A8  FFFFFFFF		; 0x2403D758
-300007AC  FFFFFFFF		; 0x2403D759
-300007B0  FFFFFFFF		; 0x2403D75A
-300007B4  FFFFFFFF		; 0x2403D75B
-300007B8  FFFFFFFF		; 0x2403D75C
-300007BC  300000C8		; 0x300000C8
-300007C0  3000014C		; 0x3000014C
+#160			ST		FLASHER.IN {R:18$8}
+(*) BOOL
+30000698  F8DF 7178		ldr r7, [pc, #+376] ; 0x24002C28
+3000069C  7038     		strb r0, [r7]
+
+#161			MOVE		BLINK_RATE,FLASHER.PT {R:18$8}
+(*) BOOL
+3000069E  F8DF 711C		ldr r7, [pc, #+284] ; 0x24002BCE
+300006A2  8838     		ldrh r0, [r7]
+300006A4  F8DF 7170		ldr r7, [pc, #+368] ; 0x24002C2C
+300006A8  6038     		str r0, [r7]
+
+#162			CAL		FLASHER {R:18$8}
+(*) UDINT
+300006AA  E92D 0021		stmdb sp!, { r0, r5 }
+300006AE  F8DF 5160		ldr r5, [pc, #+352] ; 0x24002C24
+300006B2  F8DF 41F4		ldr r4, [pc, #+500] ; 0x3000014C
+300006B6  F044 0401		orr r4, r4, #1
+300006BA  47A0     		blx r4
+300006BC  E8BD 0021		ldmia sp!, { r0, r5 }
+
+#163			LD		FLASHER.Q {R:18$8}
+(*) UNDEF
+300006C0  F8DF 7158		ldr r7, [pc, #+344] ; 0x24002C30
+300006C4  7838     		ldrb r0, [r7]
+
+#164			ST		FLASH {R:18$1}
+(*) BOOL
+300006C6  F8DF 7120		ldr r7, [pc, #+288] ; 0x24002BFA
+300006CA  7038     		strb r0, [r7]
+
+#165			R		FAULT_LED {R:18$14}
+(*) BOOL
+300006CC  2800     		cmp r0, #0
+300006CE  D009     		beq #0x000012
+300006D0  B082     		sub sp, sp, #8
+300006D2  F8CD 0000		str r0, [sp]
+300006D6  2000     		mov r0, #0
+300006D8  F8DF 718C		ldr r7, [pc, #+396] ; 0x2403D744
+300006DC  7038     		strb r0, [r7]
+300006DE  F8DD 0000		ldr r0, [sp]
+300006E2  B002     		add sp, sp, #8
+
+#166		 
+#167			(* Network 19 *)
+#168		Fault_Code_Off:
+#169			LD		FAULT_MODE {R:19$37}
+(*) UNDEF
+300006E4  F8DF 7104		ldr r7, [pc, #+260] ; 0x24002BFB
+300006E8  7838     		ldrb r0, [r7]
+
+#170			ANDN		FLASH {R:19$9}
+(*) BOOL
+300006EA  F8DF 70FC		ldr r7, [pc, #+252] ; 0x24002BFA
+300006EE  783F     		ldrb r7, [r7]
+300006F0  2F00     		cmp r7, #0
+300006F2  BF08 2701		eqmov r7, #1
+300006F6  BF18 2700		nemov r7, #0
+300006FA  4038     		and r0, r0, r7
+
+#171			ST		$$VAR$1
+(*) BOOL
+300006FC  F8DF 70E0		ldr r7, [pc, #+224] ; 0x24002BF8
+30000700  7038     		strb r0, [r7]
+
+#172			JMPCN	$$LAB$5
+(-) BOOL
+30000702  2800     		cmp r0, #0
+30000704  D017     		beq #46 ; 0x30000736
+
+
+#173			LD		BLINK_RATE {R:19$41}
+(*) UNDEF
+30000708  F8DF 70B0		ldr r7, [pc, #+176] ; 0x24002BCE
+3000070C  8838     		ldrh r0, [r7]
+
+#174			DIV	10 {R:19$39}
+(*) UINT
+3000070E  270A     		mov r7, #10 ; 10
+30000710  B082     		sub sp, sp, #8
+30000712  F8CD 1000		str r1, [sp]
+30000716  4639     		mov r1, r7
+30000718  FBB0 F0F1		udiv r0, r0, r1
+3000071C  F8DD 1000		ldr r1, [sp]
+30000720  B002     		add sp, sp, #8
+
+#175			ST		BLINKOFF_RATE {R:19$43}
+(*) UINT
+30000722  F8DF 710C		ldr r7, [pc, #+268] ; 0x24002C4E
+30000726  B082     		sub sp, sp, #8
+30000728  F8CD 0000		str r0, [sp]
+3000072C  B200     		sxth r0, r0
+3000072E  8038     		strh r0, [r7]
+30000730  F8DD 0000		ldr r0, [sp]
+30000734  B002     		add sp, sp, #8
+
+#176		$$LAB$5:
+#177			LD		$$VAR$1
+(*) UNDEF
+30000736  F8DF 70A8		ldr r7, [pc, #+168] ; 0x24002BF8
+3000073A  7838     		ldrb r0, [r7]
+
+#178			ST		FLASHER_OFF.IN {R:19$27}
+(*) BOOL
+3000073C  F8DF 70E4		ldr r7, [pc, #+228] ; 0x24002C3C
+30000740  7038     		strb r0, [r7]
+
+#179			MOVE		BLINKOFF_RATE,FLASHER_OFF.PT {R:19$27}
+(*) BOOL
+30000742  F8DF 70EC		ldr r7, [pc, #+236] ; 0x24002C4E
+30000746  F9B7 0000		ldrsh r0, [r7]
+3000074A  F8DF 70DC		ldr r7, [pc, #+220] ; 0x24002C40
+3000074E  6038     		str r0, [r7]
+
+#180			CAL		FLASHER_OFF {R:19$27}
+(*) UDINT
+30000750  E92D 0021		stmdb sp!, { r0, r5 }
+30000754  F8DF 50C8		ldr r5, [pc, #+200] ; 0x24002C38
+30000758  F8DF 414C		ldr r4, [pc, #+332] ; 0x3000014C
+3000075C  F044 0401		orr r4, r4, #1
+30000760  47A0     		blx r4
+30000762  E8BD 0021		ldmia sp!, { r0, r5 }
+
+#181			LD		FLASHER_OFF.Q {R:19$27}
+(*) UNDEF
+30000766  F8DF 70C4		ldr r7, [pc, #+196] ; 0x24002C44
+3000076A  7838     		ldrb r0, [r7]
+
+#182			ST		FLASH {R:19$1}
+(*) BOOL
+3000076C  F8DF 7078		ldr r7, [pc, #+120] ; 0x24002BFA
+30000770  7038     		strb r0, [r7]
+
+#183			S		FAULT_LED {R:19$36}
+(*) BOOL
+30000772  2800     		cmp r0, #0
+30000774  D009     		beq #0x000012
+30000776  B082     		sub sp, sp, #8
+30000778  F8CD 0000		str r0, [sp]
+3000077C  2001     		mov r0, #1
+3000077E  F8DF 70E8		ldr r7, [pc, #+232] ; 0x2403D744
+30000782  7038     		strb r0, [r7]
+30000784  F8DD 0000		ldr r0, [sp]
+30000788  B002     		add sp, sp, #8
+
+3000078A  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+3000078E  F8DD E000		ldr lr, [sp]
+30000792  B002     		add sp, sp, #8
+
+30000794  4770     		bx lr
+
+30000798  00000BB8		; 0x00000BB8
+3000079C  00001388		; 0x00001388
+300007A0  00002710		; 0x00002710
+300007A4  00007530		; 0x00007530
+300007A8  000DBBA0		; 0x000DBBA0
+300007AC  24002BC6		; 0x24002BC6
+300007B0  24002BC7		; 0x24002BC7
+300007B4  24002BCC		; 0x24002BCC
+300007B8  24002BCD		; 0x24002BCD
+300007BC  24002BCE		; 0x24002BCE
+300007C0  24002BD0		; 0x24002BD0
+300007C4  24002BD4		; 0x24002BD4
+300007C8  24002BD8		; 0x24002BD8
+300007CC  24002BDC		; 0x24002BDC
+300007D0  24002BE4		; 0x24002BE4
+300007D4  24002BE8		; 0x24002BE8
+300007D8  24002BEC		; 0x24002BEC
+300007DC  24002BF0		; 0x24002BF0
+300007E0  24002BF8		; 0x24002BF8
+300007E4  24002BF9		; 0x24002BF9
+300007E8  24002BFA		; 0x24002BFA
+300007EC  24002BFB		; 0x24002BFB
+300007F0  24002BFC		; 0x24002BFC
+300007F4  24002C00		; 0x24002C00
+300007F8  24002C04		; 0x24002C04
+300007FC  24002C08		; 0x24002C08
+30000800  24002C10		; 0x24002C10
+30000804  24002C14		; 0x24002C14
+30000808  24002C18		; 0x24002C18
+3000080C  24002C1C		; 0x24002C1C
+30000810  24002C24		; 0x24002C24
+30000814  24002C28		; 0x24002C28
+30000818  24002C2C		; 0x24002C2C
+3000081C  24002C30		; 0x24002C30
+30000820  24002C38		; 0x24002C38
+30000824  24002C3C		; 0x24002C3C
+30000828  24002C40		; 0x24002C40
+3000082C  24002C44		; 0x24002C44
+30000830  24002C4E		; 0x24002C4E
+30000834  24002C64		; 0x24002C64
+30000838  24002C68		; 0x24002C68
+3000083C  24002C6C		; 0x24002C6C
+30000840  24002C70		; 0x24002C70
+30000844  24002C78		; 0x24002C78
+30000848  24002C7C		; 0x24002C7C
+3000084C  24002C80		; 0x24002C80
+30000850  24002C84		; 0x24002C84
+30000854  24002CA0		; 0x24002CA0
+30000858  FFFFFFFF		; 0x2403D740
+3000085C  FFFFFFFF		; 0x2403D741
+30000860  FFFFFFFF		; 0x2403D742
+30000864  FFFFFFFF		; 0x2403D743
+30000868  FFFFFFFF		; 0x2403D744
+3000086C  FFFFFFFF		; 0x2403D745
+30000870  FFFFFFFF		; 0x2403D746
+30000874  FFFFFFFF		; 0x2403D748
+30000878  FFFFFFFF		; 0x2403D74A
+3000087C  FFFFFFFF		; 0x2403D74C
+30000880  FFFFFFFF		; 0x2403D74E
+30000884  FFFFFFFF		; 0x2403D750
+30000888  FFFFFFFF		; 0x2403D752
+3000088C  FFFFFFFF		; 0x2403D754
+30000890  FFFFFFFF		; 0x2403D758
+30000894  FFFFFFFF		; 0x2403D759
+30000898  FFFFFFFF		; 0x2403D75A
+3000089C  FFFFFFFF		; 0x2403D75B
+300008A0  FFFFFFFF		; 0x2403D75C
+300008A4  300000C8		; 0x300000C8
+300008A8  3000014C		; 0x3000014C
 
 END_PROGRAM
 
@@ -1366,11 +1485,11 @@ END_PROGRAM
 
 
 *** INPUT:
-300007C4  4770     		bx lr
+300008AC  4770     		bx lr
 
 
 *** OUTPUT:
-300007C6  4770     		bx lr
+300008AE  4770     		bx lr
 
 
 
@@ -1378,15 +1497,15 @@ END_PROGRAM
 	Task Fast init code
 **************************************************
 
-300007C8  B082     		sub sp, sp, #8
-300007CA  F8CD E000		str lr, [sp]
-300007CE  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+300008B0  B082     		sub sp, sp, #8
+300008B2  F8CD E000		str lr, [sp]
+300008B6  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
 
-300007D2  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-300007D6  F8DD E000		ldr lr, [sp]
-300007DA  B002     		add sp, sp, #8
+300008BA  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+300008BE  F8DD E000		ldr lr, [sp]
+300008C2  B002     		add sp, sp, #8
 
-300007DC  4770     		bx lr
+300008C4  4770     		bx lr
 
 **************************************************
 	List program: InitParDB
@@ -1401,9 +1520,9 @@ dummyCrc32 : UDINT;
 
 END_PROGRAM
 
-300007F0  B082     		sub sp, sp, #8
-300007F2  F8CD E000		str lr, [sp]
-300007F6  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+300008D0  B082     		sub sp, sp, #8
+300008D2  F8CD E000		str lr, [sp]
+300008D6  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
 
 #0		{SRC:InitParDB}
 #1		(*$WAITSWITCH$*)
@@ -1411,9 +1530,9 @@ END_PROGRAM
 #3			(* dummyCrc32 := 0; *)
 #4			MOVE		0,dummyCrc32	{LNXT:3|5|-1}
 (*) UDINT
-300007FA  2000     		mov r0, #0 ; 0
-300007FC  F8DF 7058		ldr r7, [pc, #+88] ; 0x24002BC8
-30000800  6038     		str r0, [r7]
+300008DA  2000     		mov r0, #0 ; 0
+300008DC  F8DF 7058		ldr r7, [pc, #+88] ; 0x24002BC8
+300008E0  6038     		str r0, [r7]
 
 #5		
 #6			(* warningsKiller := sysDBase_SetExtTable( TO_DWORD( 0 ), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ); *)
@@ -1421,46 +1540,46 @@ END_PROGRAM
 (-) UDINT
 #8			TO_DWORD	{LNXT:5|3|-1}
 (-) USINT
-30000802  2000     		mov r0, #0 ; 0
+300008E2  2000     		mov r0, #0 ; 0
 
 #9			sysDBase_SetExtTable		0, 0, 0, 0, 0, 0, 0, 0, 0, 0	{LNXT:5|3|-1}
 (*) DWORD
-30000804  B088     		sub sp, sp, #32
-30000806  2700     		mov r7, #0 ; 0
-30000808  4639     		mov r1, r7
-3000080A  2700     		mov r7, #0 ; 0
-3000080C  463A     		mov r2, r7
-3000080E  2700     		mov r7, #0 ; 0
-30000810  463B     		mov r3, r7
-30000812  2700     		mov r7, #0 ; 0
-30000814  F8CD 7000		str r7, [sp]
-30000818  2700     		mov r7, #0 ; 0
-3000081A  F8CD 7004		str r7, [sp, #+4]
-3000081E  2700     		mov r7, #0 ; 0
-30000820  F8CD 7008		str r7, [sp, #+8]
-30000824  2700     		mov r7, #0 ; 0
-30000826  F8CD 700C		str r7, [sp, #+12]
-3000082A  2700     		mov r7, #0 ; 0
-3000082C  F8CD 7010		str r7, [sp, #+16]
-30000830  2700     		mov r7, #0 ; 0
-30000832  F8CD 7014		str r7, [sp, #+20]
-30000836  2700     		mov r7, #0 ; 0
-30000838  F8CD 7018		str r7, [sp, #+24]
-3000083C  F8DF 4010		ldr r4, [pc, #+16] ; 0x806BE21
-30000840  F044 0401		orr r4, r4, #1
-30000844  47A0     		blx r4
-30000846  B008     		add sp, sp, #32
+300008E4  B088     		sub sp, sp, #32
+300008E6  2700     		mov r7, #0 ; 0
+300008E8  4639     		mov r1, r7
+300008EA  2700     		mov r7, #0 ; 0
+300008EC  463A     		mov r2, r7
+300008EE  2700     		mov r7, #0 ; 0
+300008F0  463B     		mov r3, r7
+300008F2  2700     		mov r7, #0 ; 0
+300008F4  F8CD 7000		str r7, [sp]
+300008F8  2700     		mov r7, #0 ; 0
+300008FA  F8CD 7004		str r7, [sp, #+4]
+300008FE  2700     		mov r7, #0 ; 0
+30000900  F8CD 7008		str r7, [sp, #+8]
+30000904  2700     		mov r7, #0 ; 0
+30000906  F8CD 700C		str r7, [sp, #+12]
+3000090A  2700     		mov r7, #0 ; 0
+3000090C  F8CD 7010		str r7, [sp, #+16]
+30000910  2700     		mov r7, #0 ; 0
+30000912  F8CD 7014		str r7, [sp, #+20]
+30000916  2700     		mov r7, #0 ; 0
+30000918  F8CD 7018		str r7, [sp, #+24]
+3000091C  F8DF 4010		ldr r4, [pc, #+16] ; 0x806BE21
+30000920  F044 0401		orr r4, r4, #1
+30000924  47A0     		blx r4
+30000926  B008     		add sp, sp, #32
 
 #10			ST		warningsKiller	{LNXT:5|3|-1}
 (*) USINT
-30000848  F8DF 7008		ldr r7, [pc, #+8] ; 0x24002BC5
-3000084C  7038     		strb r0, [r7]
+30000928  F8DF 7008		ldr r7, [pc, #+8] ; 0x24002BC5
+3000092C  7038     		strb r0, [r7]
 
-3000084E  E005     		b #10
+3000092E  E005     		b #10
 
-30000850  FFFFFFFF		; 0x0806BE21
-30000854  24002BC5		; 0x24002BC5
-30000858  24002BC8		; 0x24002BC8
+30000930  FFFFFFFF		; 0x0806BE21
+30000934  24002BC5		; 0x24002BC5
+30000938  24002BC8		; 0x24002BC8
 
 END_PROGRAM
 **************************************************
@@ -1483,15 +1602,15 @@ END_PROGRAM
 (-) UDINT
 #5			sysCfgAnalogRes	{LNXT:4|7|-1}
 (*) USINT
-3000085C  2010     		mov r0, #16 ; 16
-3000085E  F8DF 40BC		ldr r4, [pc, #+188] ; 0x8072BD1
-30000862  F044 0401		orr r4, r4, #1
-30000866  47A0     		blx r4
+3000093C  2010     		mov r0, #16 ; 16
+3000093E  F8DF 40BC		ldr r4, [pc, #+188] ; 0x8072BD1
+30000942  F044 0401		orr r4, r4, #1
+30000946  47A0     		blx r4
 
 #6			ST		warningsKiller	{LNXT:4|7|-1}
 (*) BOOL
-30000868  F8DF 70B8		ldr r7, [pc, #+184] ; 0x24002BC4
-3000086C  7038     		strb r0, [r7]
+30000948  F8DF 70B8		ldr r7, [pc, #+184] ; 0x24002BC4
+3000094C  7038     		strb r0, [r7]
 
 #7		
 #8			(* warningsKiller := sysCfgProgInput(0, 0); *)
@@ -1499,16 +1618,16 @@ END_PROGRAM
 (-) BOOL
 #10			sysCfgProgInput		0	{LNXT:7|8|-1}
 (*) USINT
-3000086E  2000     		mov r0, #0 ; 0
-30000870  2100     		mov r1, #0 ; 0
-30000872  F8DF 40AC		ldr r4, [pc, #+172] ; 0x8072BDD
-30000876  F044 0401		orr r4, r4, #1
-3000087A  47A0     		blx r4
+3000094E  2000     		mov r0, #0 ; 0
+30000950  2100     		mov r1, #0 ; 0
+30000952  F8DF 40AC		ldr r4, [pc, #+172] ; 0x8072BDD
+30000956  F044 0401		orr r4, r4, #1
+3000095A  47A0     		blx r4
 
 #11			ST		warningsKiller	{LNXT:7|8|-1}
 (*) BOOL
-3000087C  F8DF 70A4		ldr r7, [pc, #+164] ; 0x24002BC4
-30000880  7038     		strb r0, [r7]
+3000095C  F8DF 70A4		ldr r7, [pc, #+164] ; 0x24002BC4
+30000960  7038     		strb r0, [r7]
 
 #12		
 #13			(* warningsKiller := sysCfgProgInput(1, 0); *)
@@ -1516,16 +1635,16 @@ END_PROGRAM
 (-) BOOL
 #15			sysCfgProgInput		0	{LNXT:8|9|-1}
 (*) USINT
-30000882  2001     		mov r0, #1 ; 1
-30000884  2100     		mov r1, #0 ; 0
-30000886  F8DF 4098		ldr r4, [pc, #+152] ; 0x8072BDD
-3000088A  F044 0401		orr r4, r4, #1
-3000088E  47A0     		blx r4
+30000962  2001     		mov r0, #1 ; 1
+30000964  2100     		mov r1, #0 ; 0
+30000966  F8DF 4098		ldr r4, [pc, #+152] ; 0x8072BDD
+3000096A  F044 0401		orr r4, r4, #1
+3000096E  47A0     		blx r4
 
 #16			ST		warningsKiller	{LNXT:8|9|-1}
 (*) BOOL
-30000890  F8DF 7090		ldr r7, [pc, #+144] ; 0x24002BC4
-30000894  7038     		strb r0, [r7]
+30000970  F8DF 7090		ldr r7, [pc, #+144] ; 0x24002BC4
+30000974  7038     		strb r0, [r7]
 
 #17		
 #18			(* warningsKiller := sysCfgProgInput(2, 0); *)
@@ -1533,16 +1652,16 @@ END_PROGRAM
 (-) BOOL
 #20			sysCfgProgInput		0	{LNXT:9|10|-1}
 (*) USINT
-30000896  2002     		mov r0, #2 ; 2
-30000898  2100     		mov r1, #0 ; 0
-3000089A  F8DF 4084		ldr r4, [pc, #+132] ; 0x8072BDD
-3000089E  F044 0401		orr r4, r4, #1
-300008A2  47A0     		blx r4
+30000976  2002     		mov r0, #2 ; 2
+30000978  2100     		mov r1, #0 ; 0
+3000097A  F8DF 4084		ldr r4, [pc, #+132] ; 0x8072BDD
+3000097E  F044 0401		orr r4, r4, #1
+30000982  47A0     		blx r4
 
 #21			ST		warningsKiller	{LNXT:9|10|-1}
 (*) BOOL
-300008A4  F8DF 707C		ldr r7, [pc, #+124] ; 0x24002BC4
-300008A8  7038     		strb r0, [r7]
+30000984  F8DF 707C		ldr r7, [pc, #+124] ; 0x24002BC4
+30000988  7038     		strb r0, [r7]
 
 #22		
 #23			(* warningsKiller := sysCfgProgInput(3, 0); *)
@@ -1550,16 +1669,16 @@ END_PROGRAM
 (-) BOOL
 #25			sysCfgProgInput		0	{LNXT:10|11|-1}
 (*) USINT
-300008AA  2003     		mov r0, #3 ; 3
-300008AC  2100     		mov r1, #0 ; 0
-300008AE  F8DF 4070		ldr r4, [pc, #+112] ; 0x8072BDD
-300008B2  F044 0401		orr r4, r4, #1
-300008B6  47A0     		blx r4
+3000098A  2003     		mov r0, #3 ; 3
+3000098C  2100     		mov r1, #0 ; 0
+3000098E  F8DF 4070		ldr r4, [pc, #+112] ; 0x8072BDD
+30000992  F044 0401		orr r4, r4, #1
+30000996  47A0     		blx r4
 
 #26			ST		warningsKiller	{LNXT:10|11|-1}
 (*) BOOL
-300008B8  F8DF 7068		ldr r7, [pc, #+104] ; 0x24002BC4
-300008BC  7038     		strb r0, [r7]
+30000998  F8DF 7068		ldr r7, [pc, #+104] ; 0x24002BC4
+3000099C  7038     		strb r0, [r7]
 
 #27		
 #28			(* warningsKiller := sysCfgProgInput(4, 0); *)
@@ -1567,16 +1686,16 @@ END_PROGRAM
 (-) BOOL
 #30			sysCfgProgInput		0	{LNXT:11|12|-1}
 (*) USINT
-300008BE  2004     		mov r0, #4 ; 4
-300008C0  2100     		mov r1, #0 ; 0
-300008C2  F8DF 405C		ldr r4, [pc, #+92] ; 0x8072BDD
-300008C6  F044 0401		orr r4, r4, #1
-300008CA  47A0     		blx r4
+3000099E  2004     		mov r0, #4 ; 4
+300009A0  2100     		mov r1, #0 ; 0
+300009A2  F8DF 405C		ldr r4, [pc, #+92] ; 0x8072BDD
+300009A6  F044 0401		orr r4, r4, #1
+300009AA  47A0     		blx r4
 
 #31			ST		warningsKiller	{LNXT:11|12|-1}
 (*) BOOL
-300008CC  F8DF 7054		ldr r7, [pc, #+84] ; 0x24002BC4
-300008D0  7038     		strb r0, [r7]
+300009AC  F8DF 7054		ldr r7, [pc, #+84] ; 0x24002BC4
+300009B0  7038     		strb r0, [r7]
 
 #32		
 #33			(* warningsKiller := sysCfgProgInput(5, 0); *)
@@ -1584,16 +1703,16 @@ END_PROGRAM
 (-) BOOL
 #35			sysCfgProgInput		0	{LNXT:12|13|-1}
 (*) USINT
-300008D2  2005     		mov r0, #5 ; 5
-300008D4  2100     		mov r1, #0 ; 0
-300008D6  F8DF 4048		ldr r4, [pc, #+72] ; 0x8072BDD
-300008DA  F044 0401		orr r4, r4, #1
-300008DE  47A0     		blx r4
+300009B2  2005     		mov r0, #5 ; 5
+300009B4  2100     		mov r1, #0 ; 0
+300009B6  F8DF 4048		ldr r4, [pc, #+72] ; 0x8072BDD
+300009BA  F044 0401		orr r4, r4, #1
+300009BE  47A0     		blx r4
 
 #36			ST		warningsKiller	{LNXT:12|13|-1}
 (*) BOOL
-300008E0  F8DF 7040		ldr r7, [pc, #+64] ; 0x24002BC4
-300008E4  7038     		strb r0, [r7]
+300009C0  F8DF 7040		ldr r7, [pc, #+64] ; 0x24002BC4
+300009C4  7038     		strb r0, [r7]
 
 #37		
 #38			(* warningsKiller := sysCfgProgInput(6, 0); *)
@@ -1601,16 +1720,16 @@ END_PROGRAM
 (-) BOOL
 #40			sysCfgProgInput		0	{LNXT:13|14|-1}
 (*) USINT
-300008E6  2006     		mov r0, #6 ; 6
-300008E8  2100     		mov r1, #0 ; 0
-300008EA  F8DF 4034		ldr r4, [pc, #+52] ; 0x8072BDD
-300008EE  F044 0401		orr r4, r4, #1
-300008F2  47A0     		blx r4
+300009C6  2006     		mov r0, #6 ; 6
+300009C8  2100     		mov r1, #0 ; 0
+300009CA  F8DF 4034		ldr r4, [pc, #+52] ; 0x8072BDD
+300009CE  F044 0401		orr r4, r4, #1
+300009D2  47A0     		blx r4
 
 #41			ST		warningsKiller	{LNXT:13|14|-1}
 (*) BOOL
-300008F4  F8DF 702C		ldr r7, [pc, #+44] ; 0x24002BC4
-300008F8  7038     		strb r0, [r7]
+300009D4  F8DF 702C		ldr r7, [pc, #+44] ; 0x24002BC4
+300009D8  7038     		strb r0, [r7]
 
 #42		
 #43			(* warningsKiller := sysCfgProgInput(7, 0); *)
@@ -1618,26 +1737,26 @@ END_PROGRAM
 (-) BOOL
 #45			sysCfgProgInput		0	{LNXT:14|4|-1}
 (*) USINT
-300008FA  2007     		mov r0, #7 ; 7
-300008FC  2100     		mov r1, #0 ; 0
-300008FE  F8DF 4020		ldr r4, [pc, #+32] ; 0x8072BDD
-30000902  F044 0401		orr r4, r4, #1
-30000906  47A0     		blx r4
+300009DA  2007     		mov r0, #7 ; 7
+300009DC  2100     		mov r1, #0 ; 0
+300009DE  F8DF 4020		ldr r4, [pc, #+32] ; 0x8072BDD
+300009E2  F044 0401		orr r4, r4, #1
+300009E6  47A0     		blx r4
 
 #46			ST		warningsKiller	{LNXT:14|4|-1}
 (*) BOOL
-30000908  F8DF 7018		ldr r7, [pc, #+24] ; 0x24002BC4
-3000090C  7038     		strb r0, [r7]
+300009E8  F8DF 7018		ldr r7, [pc, #+24] ; 0x24002BC4
+300009EC  7038     		strb r0, [r7]
 
-3000090E  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-30000912  F8DD E000		ldr lr, [sp]
-30000916  B002     		add sp, sp, #8
+300009EE  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+300009F2  F8DD E000		ldr lr, [sp]
+300009F6  B002     		add sp, sp, #8
 
-30000918  4770     		bx lr
+300009F8  4770     		bx lr
 
-3000091C  FFFFFFFF		; 0x08072BD1
-30000920  FFFFFFFF		; 0x08072BDD
-30000924  24002BC4		; 0x24002BC4
+300009FC  FFFFFFFF		; 0x08072BD1
+30000A00  FFFFFFFF		; 0x08072BDD
+30000A04  24002BC4		; 0x24002BC4
 
 END_PROGRAM
 
@@ -1648,11 +1767,11 @@ END_PROGRAM
 
 
 *** INPUT:
-30000928  4770     		bx lr
+30000A08  4770     		bx lr
 
 
 *** OUTPUT:
-3000092A  4770     		bx lr
+30000A0A  4770     		bx lr
 
 
 
@@ -1660,15 +1779,15 @@ END_PROGRAM
 	Task Init init code
 **************************************************
 
-3000092C  B082     		sub sp, sp, #8
-3000092E  F8CD E000		str lr, [sp]
-30000932  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A0C  B082     		sub sp, sp, #8
+30000A0E  F8CD E000		str lr, [sp]
+30000A12  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
 
-30000936  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-3000093A  F8DD E000		ldr lr, [sp]
-3000093E  B002     		add sp, sp, #8
+30000A16  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A1A  F8DD E000		ldr lr, [sp]
+30000A1E  B002     		add sp, sp, #8
 
-30000940  4770     		bx lr
+30000A20  4770     		bx lr
 
 
 
@@ -1676,15 +1795,15 @@ END_PROGRAM
 	Global init code
 **************************************************
 
-30000950  B082     		sub sp, sp, #8
-30000952  F8CD E000		str lr, [sp]
-30000956  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A30  B082     		sub sp, sp, #8
+30000A32  F8CD E000		str lr, [sp]
+30000A36  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
 
-3000095A  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-3000095E  F8DD E000		ldr lr, [sp]
-30000962  B002     		add sp, sp, #8
+30000A3A  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A3E  F8DD E000		ldr lr, [sp]
+30000A42  B002     		add sp, sp, #8
 
-30000964  4770     		bx lr
+30000A44  4770     		bx lr
 
 
 
@@ -1692,15 +1811,15 @@ END_PROGRAM
 	Global RETAIN init code
 **************************************************
 
-30000966  B082     		sub sp, sp, #8
-30000968  F8CD E000		str lr, [sp]
-3000096C  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A46  B082     		sub sp, sp, #8
+30000A48  F8CD E000		str lr, [sp]
+30000A4C  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
 
-30000970  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-30000974  F8DD E000		ldr lr, [sp]
-30000978  B002     		add sp, sp, #8
+30000A50  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A54  F8DD E000		ldr lr, [sp]
+30000A58  B002     		add sp, sp, #8
 
-3000097A  4770     		bx lr
+30000A5A  4770     		bx lr
 
 
 
@@ -1708,15 +1827,15 @@ END_PROGRAM
 	Task $$VirtualTables init code
 **************************************************
 
-3000097C  B082     		sub sp, sp, #8
-3000097E  F8CD E000		str lr, [sp]
-30000982  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A5C  B082     		sub sp, sp, #8
+30000A5E  F8CD E000		str lr, [sp]
+30000A62  E92D 0FF0		stmdb sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
 
-30000986  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
-3000098A  F8DD E000		ldr lr, [sp]
-3000098E  B002     		add sp, sp, #8
+30000A66  E8BD 0FF0		ldmia sp!, { r4, r5, r6, r7, r8, r9, r10, r11 }
+30000A6A  F8DD E000		ldr lr, [sp]
+30000A6E  B002     		add sp, sp, #8
 
-30000990  4770     		bx lr
+30000A70  4770     		bx lr
 
 
 
@@ -1726,12 +1845,12 @@ MEMORY MAP
 
 Code area type:          		       main code
 Start code area:          		0000000030000000h
-End code area:            		0000000030000BB4h
-Code size:                		00000BB4h
+End code area:            		0000000030000C94h
+Code size:                		00000C94h
 
 Start local data area:    		0000000024002BB8h
-End local data area:      		0000000024002C78h
-Local data size:          		000000C0h
+End local data area:      		0000000024002CA1h
+Local data size:          		000000E9h
 
 Start retentive data area:		00000000240027B8h
 End retentive data area:  		00000000240027B8h
@@ -1744,7 +1863,7 @@ Bit data size:            		00000000h
 
 
 ********************************************
-CODE ID:                                C2B074CA
+CODE ID:                                55DDFDF7
 DEBUG MEMO ID:                          300058B3
 FULL MEMO ID:                           0000C710
 ********************************************
