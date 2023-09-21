@@ -124,7 +124,7 @@ cnt := cnt + 1;
 ]]>
 					</sourceCode>
 				</program>
-				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1695147204" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
+				<program name="Ladder" version="1.0.0" creationDate="1694825297" lastModifiedDate="1695255605" excludeFromBuild="FALSE" excludeFromBuildIfNotDef="">
 					<vars>
 						<localVars>
 							<var name="Low_Oil_Fault" type="BOOL"/>
@@ -157,7 +157,7 @@ cnt := cnt + 1;
 						<localConsts>
 							<const name="ACD_Open" type="INT">
 								<descr>Duration of ACD Venting (ms)</descr>
-								<initValue>30000</initValue>
+								<initValue>10000</initValue>
 							</const>
 							<const name="ACD_Cycle" type="UDINT">
 								<descr>Duration of ACD Vent Cycle (ms)</descr>
@@ -194,7 +194,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="2" nextID="7" comment="" disabled="false" disableCondition="">
+							<network label="" id="2" nextID="10" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TOF" id="4" instance="ACD_Starter">
@@ -220,13 +220,14 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="" id="3" nextID="7" comment="" disabled="false" disableCondition="">
+							<network label="" id="3" nextID="11" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="Stop" type="Closed" id="0"/>
 									</input>
 									<outputs>
-										<coil name="Clapper" type="Reset" id="1"/>
+										<coil name="ACD" type="Reset" id="9"/>
+										<coil name="Clapper" type="Reset" id="10"/>
 									</outputs>
 								</assignment>
 							</network>
@@ -427,7 +428,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Manual_Override" id="10" nextID="27" comment="" disabled="false" disableCondition="">
+							<network label="Manual_Fault_Reset" id="10" nextID="27" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="14" instance="Shutdown_Reset">
@@ -461,13 +462,14 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="At_Pressure_Standby" id="11" nextID="6" comment="" disabled="false" disableCondition="">
+							<network label="At_Pressure_Standby" id="11" nextID="7" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<contact name="Pressure_Sensor" type="Closed" id="2"/>
 									</input>
 									<outputs>
 										<coil name="Motor_Standby" type="Normal" id="1"/>
+										<coil name="ACD" type="Reset" id="6"/>
 									</outputs>
 								</assignment>
 							</network>
@@ -539,7 +541,7 @@ cnt := cnt + 1;
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Fault_Code_On" id="18" nextID="17" comment="" disabled="false" disableCondition="">
+							<network label="Fault_Code_On" id="18" nextID="18" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="8" instance="Flasher">
@@ -565,10 +567,11 @@ cnt := cnt + 1;
 									<outputs>
 										<coil name="Flash" type="Normal" id="1"/>
 										<coil name="Fault_LED" type="Reset" id="14"/>
+										<coil name="Warn_Light" type="Reset" id="17"/>
 									</outputs>
 								</assignment>
 							</network>
-							<network label="Fault_Code_Off" id="19" nextID="45" comment="" disabled="false" disableCondition="">
+							<network label="Fault_Code_Off" id="19" nextID="46" comment="" disabled="false" disableCondition="">
 								<assignment fromTmpVar="">
 									<input>
 										<funcBlock name="TON" id="27" instance="Flasher_Off">
@@ -614,6 +617,7 @@ cnt := cnt + 1;
 									<outputs>
 										<coil name="Flash" type="Normal" id="1"/>
 										<coil name="Fault_LED" type="Set" id="36"/>
+										<coil name="Warn_Light" type="Set" id="45"/>
 									</outputs>
 								</assignment>
 							</network>
@@ -6166,7 +6170,7 @@ END_PROGRAM
 			</src>
 		</aux>
 		<workspace>
-			<root name="Alkin W32 Compressor Control" nextID="898">
+			<root name="Alkin W32 Compressor Control" nextID="978">
 				<Pou name="main" id="1"/>
 				<GlobalVars name="Global_vars" id="2"/>
 				<GlobalVars name="I_O_mappings_RelayOut" id="5"/>
